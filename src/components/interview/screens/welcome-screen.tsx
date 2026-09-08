@@ -68,7 +68,7 @@ export function WelcomeScreen() {
           transition={transitions.base}
           className="max-w-xl text-lg text-balance text-muted-foreground"
         >
-          Help us understand how product decisions are really made with data and
+          Help me understand how product decisions are really made with data and
           AI — from the people who make them.
         </motion.p>
 

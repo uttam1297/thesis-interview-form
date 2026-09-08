@@ -33,7 +33,7 @@ export function AlreadySubmittedScreen() {
         </p>
       )}
       <p className="text-sm text-muted-foreground">
-        If you would like your responses withdrawn, contact the study team at{" "}
+        If you would like your responses withdrawn, contact me at{" "}
         <a
           href={`mailto:${study.contactEmail}`}
           className="underline underline-offset-4 hover:text-foreground"

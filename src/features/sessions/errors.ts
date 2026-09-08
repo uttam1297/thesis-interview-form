@@ -33,8 +33,7 @@ export const sessionErrorStatus: Record<SessionErrorCode, number> = {
 export const sessionErrorMessages: Record<SessionErrorCode, string> = {
   invalid_token:
     "This link is not valid. Please use the most recent link you were given.",
-  expired:
-    "This link has expired. Contact the study team if you would like to continue.",
+  expired: "This link has expired. Contact me if you would like to continue.",
   already_completed: "This interview has already been submitted. Thank you.",
   version_mismatch:
     "The questionnaire has been updated since this session started, so it cannot be continued.",

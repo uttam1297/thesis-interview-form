@@ -7,7 +7,7 @@ export const consentContent = {
   version: "v1-draft",
   title: "Before we begin",
   intro:
-    "This research explores how product professionals use data and AI in decision-making. Participation is voluntary.",
+    "I am researching how product professionals use data and AI in decision-making. Participation is voluntary, and you can stop at any point.",
   points: [
     {
       title: "Estimated duration",
@@ -16,7 +16,7 @@ export const consentContent = {
     {
       title: "Confidentiality",
       description:
-        "Responses are anonymized in the thesis. Your name and company are never published.",
+        "I anonymize responses in the thesis. Your name and company are never published.",
     },
     {
       title: "Pausing and withdrawal",

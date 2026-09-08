@@ -71,7 +71,7 @@ export function CompleteScreen() {
           transition={transitions.base}
           className="text-sm text-muted-foreground"
         >
-          Questions about this research? Contact the study team at{" "}
+          Questions about this research? Contact me at{" "}
           <a
             href={`mailto:${study.contactEmail}`}
             className="underline underline-offset-4 hover:text-foreground"

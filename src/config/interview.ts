@@ -22,7 +22,7 @@ const SOME_AI_USE = {
 } as const;
 
 const rawConfig = {
-  version: "2.1.0",
+  version: "2.2.0",
   sections: [
     {
       id: "profile",
@@ -357,16 +357,16 @@ const rawConfig = {
       construct: "prioritisation",
       sectionId: "challenges",
       title: "Prioritisation factors",
-      // Reworded in 2.1.0 for clarity. The construct is unchanged: how
-      // competing options are weighed against each other. The earlier
-      // phrasing ("when options are prioritised") was passive and gave no
-      // instruction on how to answer.
+      // Changed in 2.2.0 from a forced ranking of all five factors to a
+      // simple choice of the few that dominate. Ranking asked participants
+      // to express relative weights they do not hold that precisely, and
+      // the open question that follows is where the reasoning is captured.
       prompt:
-        "When your team decides what to work on next, how much weight does each of these carry?",
-      description:
-        "Use the arrows to put them in order. There is no right answer — order them as they actually work in your team.",
+        "Which of these carry the most weight when your team decides what to work on next?",
+      description: "Choose up to three.",
       required: true,
-      responseType: "ranking",
+      responseType: "multi_select",
+      validation: { minSelections: 1, maxSelections: 3 },
       options: [
         { value: "quantitative_impact", label: "Expected quantitative impact" },
         { value: "user_evidence", label: "Strength of user evidence" },

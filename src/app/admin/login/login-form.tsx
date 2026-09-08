@@ -55,7 +55,7 @@ export function LoginForm({ next, notAResearcher }: LoginFormProps) {
           Researcher sign in
         </h1>
         <p className="text-sm text-muted-foreground">
-          Participants do not need an account — this is the study team area.
+          Participants do not need an account — this is the researcher area.
         </p>
       </div>
 

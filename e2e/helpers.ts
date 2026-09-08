@@ -63,7 +63,12 @@ export async function answerCoreQuestions(page: Page) {
 
   await continueStep(page); // Challenges intro
   await typeAnswer(page, "Insights arrive too late to act on.");
-  await continueStep(page); // accept default ranking
+  // Prioritisation factors: choose up to three.
+  await page.getByRole("checkbox", { name: "Effort and cost" }).click();
+  await page
+    .getByRole("checkbox", { name: "Expected quantitative impact" })
+    .click();
+  await continueStep(page);
   await typeAnswer(page, "Impact against effort in planning.");
 
   await continueStep(page); // Governance intro

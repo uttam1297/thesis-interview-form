@@ -53,6 +53,36 @@ async function reachFirstQuestion(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("question flow through the runner", () => {
+  it("keeps the outgoing question layout stable at a section boundary", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Harness>
+        <InterviewRunner />
+      </Harness>
+    );
+    await reachFirstQuestion(user);
+
+    const contentWidth = () =>
+      container.querySelector('[data-slot="interview-content-width"]');
+    expect(contentWidth()).toHaveClass("max-w-5xl");
+
+    await user.click(screen.getByRole("radio", { name: "Product Manager" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(await screen.findByRole("radio", { name: "Yes" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Core" })
+    ).toBeInTheDocument();
+    expect(contentWidth()).toHaveClass("max-w-5xl");
+
+    const compactPath = container.querySelector(
+      '[data-slot="compact-section-path"]'
+    );
+    expect(compactPath).toHaveClass("opacity-0");
+    expect(compactPath).toHaveAttribute("aria-hidden", "true");
+  });
+
   it("blocks Continue on a required question until answered, then advances", async () => {
     const user = userEvent.setup();
     render(
@@ -121,7 +151,9 @@ describe("question flow through the runner", () => {
 
     await user.click(await screen.findByRole("button", { name: "Continue" }));
     expect(
-      await screen.findByRole("heading", { name: "How do AI tools support you?" })
+      await screen.findByRole("heading", {
+        name: "How do AI tools support you?",
+      })
     ).toBeInTheDocument();
     expect(
       await screen.findByRole("button", { name: /speak answer/i })

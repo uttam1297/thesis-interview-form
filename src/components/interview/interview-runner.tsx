@@ -61,6 +61,9 @@ export function InterviewRunner() {
 
   return (
     <InterviewShell
+      // The landing lays out two columns; every other step stays a single
+      // reading column.
+      wide={currentStep.kind === "welcome"}
       progress={
         showProgress ? (
           <div className="flex flex-col gap-1.5">

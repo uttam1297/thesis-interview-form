@@ -28,7 +28,7 @@ export function ScreenHeading({ id, children, className }: ScreenHeadingProps) {
       id={id}
       tabIndex={-1}
       className={cn(
-        "text-xl font-medium text-balance outline-none sm:text-2xl",
+        "font-heading text-2xl leading-snug font-medium text-balance outline-none sm:text-3xl",
         className
       )}
     >

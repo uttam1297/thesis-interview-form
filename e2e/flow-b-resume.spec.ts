@@ -89,5 +89,7 @@ test("Flow B: Start over abandons the local draft and begins a new session", asy
     page.getByText("You have an unfinished session on this device.")
   ).toBeVisible();
   await page.getByRole("button", { name: "Start over" }).click();
-  await expect(page.getByRole("button", { name: "Begin" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Begin the interview" })
+  ).toBeVisible();
 });

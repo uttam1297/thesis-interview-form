@@ -31,7 +31,9 @@ function Harness({ children }: { children: ReactNode }) {
 }
 
 async function reachFirstQuestion(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(await screen.findByRole("button", { name: "Begin" }));
+  await user.click(
+    await screen.findByRole("button", { name: "Begin the interview" })
+  );
   await user.click(screen.getByRole("checkbox"));
   await user.click(screen.getByRole("button", { name: "Continue" }));
   await user.click(screen.getByRole("button", { name: "Continue" })); // section intro

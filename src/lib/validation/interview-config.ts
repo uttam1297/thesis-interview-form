@@ -51,6 +51,7 @@ const baseSchema = z.object({
   title: z.string().min(1),
   prompt: z.string().min(1),
   description: z.string().optional(),
+  aside: z.string().optional(),
   required: z.boolean(),
   showIf: z.array(conditionSchema).optional(),
   researchMetadata: researchMetadataSchema.optional(),

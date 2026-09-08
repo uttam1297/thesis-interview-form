@@ -19,12 +19,21 @@ export function InterviewShell({
 }: InterviewShellProps) {
   return (
     <div className="flex min-h-dvh flex-col">
+      <a
+        href="#interview-content"
+        className="sr-only rounded-lg bg-background px-4 py-2 text-sm font-medium ring-2 ring-ring focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
+      >
+        Skip to the question
+      </a>
       {progress && (
         <div className="mx-auto w-full max-w-(--width-content) px-4 pt-6 sm:px-6 sm:pt-8">
           {progress}
         </div>
       )}
-      <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6">
+      <main
+        id="interview-content"
+        className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6"
+      >
         <div className="flex w-full max-w-(--width-content) justify-center">
           {children}
         </div>

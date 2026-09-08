@@ -47,6 +47,8 @@ describe("interview reducer", () => {
       accepted: true,
       version: "v1",
       acceptedAt: now,
+      // Recording consent is recorded separately and never inferred.
+      recordingConsent: null,
     });
     expect(state.currentStepId).toBe("section:profile");
   });

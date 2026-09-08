@@ -8,9 +8,11 @@ import {
   useReducer,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 
+import type { SyncStatus } from "@/features/interview/persistence/sync-queue";
 import type { InterviewPersistence } from "@/features/interview/persistence/types";
 import {
   calculateProgress,
@@ -49,6 +51,11 @@ export interface InterviewContextValue {
   submit: () => Promise<void>;
   submitError: string | null;
   submitting: boolean;
+  /** Server persistence state; "idle" when persistence is local-only. */
+  syncStatus: SyncStatus;
+  retrySync: () => void;
+  /** Present once a server session exists, for the "continue elsewhere" link. */
+  resumeToken: string | null;
 }
 
 /** Actions the UI may dispatch; timestamps are stamped by the provider. */
@@ -68,6 +75,13 @@ export const InterviewContext = createContext<InterviewContextValue | null>(
 interface InterviewProviderProps {
   config: InterviewConfig;
   persistence: InterviewPersistence;
+  /**
+   * Continue an existing session immediately instead of offering the
+   * choice. Set when opening the session was already a deliberate act —
+   * following a resume link, or a researcher opening a live interview.
+   * A returning visitor on a shared device still gets the choice.
+   */
+  autoResume?: boolean;
   /** Injectable clock for deterministic tests. */
   now?: () => string;
   children: ReactNode;
@@ -76,6 +90,7 @@ interface InterviewProviderProps {
 export function InterviewProvider({
   config,
   persistence,
+  autoResume = false,
   now = () => new Date().toISOString(),
   children,
 }: InterviewProviderProps) {
@@ -89,19 +104,47 @@ export function InterviewProvider({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load any existing draft once on mount. It is only offered, not applied,
-  // so the participant chooses between resuming and starting over.
+  // The persistence layer is an external store; subscribe rather than
+  // mirroring its state into an effect.
+  const sync = persistence.sync;
+  const syncStatus = useSyncExternalStore(
+    useCallback(
+      (onChange: () => void) => sync?.subscribe(onChange) ?? (() => {}),
+      [sync]
+    ),
+    () => sync?.getStatus() ?? "idle",
+    () => "idle" as SyncStatus
+  );
+  const resumeToken = useSyncExternalStore(
+    useCallback(
+      (onChange: () => void) => sync?.subscribe(onChange) ?? (() => {}),
+      [sync]
+    ),
+    () => sync?.getResumeToken() ?? null,
+    () => null
+  );
+
+  // Load any existing draft once on mount. Normally it is offered rather
+  // than applied, so a returning visitor chooses between continuing and
+  // starting over; autoResume skips that when the intent is unambiguous.
   useEffect(() => {
     let cancelled = false;
     persistence.drafts.load(config.version).then((draft) => {
       if (cancelled) return;
-      if (draft && draft.status === "in_progress") setPendingDraft(draft);
+      if (draft?.status === "submitted") {
+        // A finished session: show the closing screen rather than sending
+        // the participant back to the welcome page.
+        rawDispatch({ type: "HYDRATE", state: draft });
+      } else if (draft && draft.status === "in_progress") {
+        if (autoResume) rawDispatch({ type: "HYDRATE", state: draft });
+        else setPendingDraft(draft);
+      }
       setHydrated(true);
     });
     return () => {
       cancelled = true;
     };
-  }, [persistence, config.version]);
+  }, [persistence, config.version, autoResume]);
 
   // Debounced autosave of in-progress sessions.
   useEffect(() => {
@@ -181,6 +224,9 @@ export function InterviewProvider({
     submit,
     submitError,
     submitting,
+    syncStatus,
+    retrySync: () => persistence.sync?.retry(),
+    resumeToken,
   };
 
   return (

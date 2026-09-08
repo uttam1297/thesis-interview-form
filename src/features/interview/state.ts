@@ -6,6 +6,11 @@ export interface ConsentState {
   accepted: boolean;
   version: string;
   acceptedAt: string;
+  /**
+   * Null means recording was not asked about. Never inferred from
+   * participation consent — the two are recorded separately.
+   */
+  recordingConsent?: boolean | null;
 }
 
 /**

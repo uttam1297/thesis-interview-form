@@ -44,16 +44,19 @@ describe("buildSteps", () => {
     ).toBe("profile");
   });
 
-  it("sums remaining minutes from the current section onwards", () => {
+  it("numbers each section intro by position among visible sections", () => {
     const intros = buildSteps(testConfig, {}).filter(
       (s) => s.kind === "section-intro"
     );
-    expect(
-      intros[0].kind === "section-intro" && intros[0].remainingMinutes
-    ).toBe(5);
-    expect(
-      intros[1].kind === "section-intro" && intros[1].remainingMinutes
-    ).toBe(4);
+    expect(intros[0].kind === "section-intro" && intros[0].sectionNumber).toBe(
+      1
+    );
+    expect(intros[1].kind === "section-intro" && intros[1].sectionNumber).toBe(
+      2
+    );
+    expect(intros[1].kind === "section-intro" && intros[1].sectionCount).toBe(
+      2
+    );
   });
 
   it("routes to the matching branch and never shows both", () => {

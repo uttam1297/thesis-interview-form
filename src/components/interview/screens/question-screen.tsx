@@ -24,6 +24,13 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
   const [error, setError] = useState<string | null>(null);
   const labelId = useId();
   const descriptionId = useId();
+  const guidanceId = useId();
+  const errorId = useId();
+
+  const isOpenQuestion =
+    question.responseType === "voice_or_text" ||
+    question.responseType === "long_text" ||
+    question.responseType === "optional_elaboration";
 
   const record = state.responses[question.id];
   const value = record?.value ?? null;
@@ -64,8 +71,19 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
             {question.description}
           </p>
         )}
+        {/*
+          Guidance only — never implies a long answer is expected. This is
+          supporting copy and does not alter the research question itself.
+        */}
+        {isOpenQuestion && (
+          <p id={guidanceId} className="text-sm text-muted-foreground">
+            A sentence or two is plenty. Answer in your own words.
+          </p>
+        )}
         {!question.required && (
-          <p className="text-xs text-muted-foreground">Optional</p>
+          <p className="text-xs text-muted-foreground">
+            Optional — you can skip this.
+          </p>
         )}
       </div>
 
@@ -74,10 +92,24 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
         value={value}
         onChange={handleChange}
         labelId={labelId}
-        describedById={question.description ? descriptionId : undefined}
+        // Description, guidance and any validation error are all announced
+        // with the control they belong to.
+        describedById={
+          [
+            question.description ? descriptionId : null,
+            isOpenQuestion ? guidanceId : null,
+            error ? errorId : null,
+          ]
+            .filter(Boolean)
+            .join(" ") || undefined
+        }
       />
 
-      {error && <StatusMessage variant="warning">{error}</StatusMessage>}
+      {error && (
+        <div id={errorId}>
+          <StatusMessage variant="warning">{error}</StatusMessage>
+        </div>
+      )}
 
       <NavigationControls
         onBack={() => dispatch({ type: "BACK" })}

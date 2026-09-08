@@ -28,6 +28,7 @@ interface BrowserSpeechRecognition {
   lang: string;
   continuous: boolean;
   interimResults: boolean;
+  onstart: (() => void) | null;
   onresult: ((event: BrowserSpeechRecognitionEvent) => void) | null;
   onerror: ((event: BrowserSpeechRecognitionErrorEvent) => void) | null;
   onend: (() => void) | null;
@@ -95,6 +96,9 @@ export function createBrowserSpeechAdapter(): SpeechRecognitionAdapter {
       recognition.lang = options?.language ?? "en-US";
       recognition.continuous = true;
       recognition.interimResults = true;
+
+      // Fires once permission is granted and audio capture starts.
+      recognition.onstart = () => handlers.onStart?.();
 
       recognition.onresult = (event) => {
         for (let i = event.resultIndex; i < event.results.length; i += 1) {

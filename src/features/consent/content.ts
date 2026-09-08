@@ -4,10 +4,11 @@
  * version string is written to every consent record, so any change to the
  * wording below must come with a bump.
  *
- * Structured around what a GDPR/DSGVO informed-consent notice for academic
- * research is expected to cover: who is responsible, what is collected, why,
- * on what legal basis, how long it is kept, and how to withdraw. Written in
- * plain language — consent obtained through dense text is not informed.
+ * Laid out in two layers, which is what data protection guidance recommends
+ * and what people actually read: a short line per point, always visible,
+ * with the full wording one click away. Everything required is present —
+ * nothing that matters is hidden behind the disclosure, it is only stated
+ * more fully there.
  *
  * NOT YET APPROVED. Confirm the retention period, the legal basis and your
  * supervisor's details with your examiner and HTW's data protection office
@@ -16,8 +17,7 @@
 
 /**
  * The one place the length of the interview is stated. Both the landing and
- * the consent screen read it, so they cannot drift apart — they previously
- * claimed 25–30 and 20–30 minutes on adjacent screens.
+ * the consent screen read it, so they cannot drift apart.
  *
  * Replace with the median measured in the pilot (/admin/pilot).
  */
@@ -26,43 +26,67 @@ export const ESTIMATED_MINUTES = "20–30 minutes";
 /** Months after which collected responses are deleted. */
 export const RETENTION_MONTHS = 5;
 
+export interface ConsentPoint {
+  /** Icon key, mapped to a lucide icon by the consent screen. */
+  icon: "person" | "data" | "voice" | "use" | "retention" | "withdraw";
+  title: string;
+  /** One line, always visible. */
+  summary: string;
+  /** The full wording, shown when the participant opens the details. */
+  detail: string;
+}
+
 export const consentContent = {
-  version: "v2-2026-09",
+  version: "v3-2026-09",
   title: "Before we begin",
-  intro:
-    "I am researching how professionals use data and AI when they make product decisions. This is a master's thesis at HTW Berlin. Taking part is voluntary, and stopping early costs you nothing.",
+  intro: `A master's thesis at HTW Berlin on how professionals use data and AI to make product decisions. ${ESTIMATED_MINUTES}, voluntary, and you can stop whenever you like.`,
 
   points: [
     {
-      title: "Who is responsible",
-      description:
-        "Uttam Darekar, MBA & Engineering student at HTW Berlin — University of Applied Sciences. I am the only person who sees your raw answers. Reach me at Uttam.Darekar@Student.HTW-Berlin.de.",
+      icon: "person",
+      title: "Just me",
+      summary: "One researcher sees your answers.",
+      detail:
+        "Uttam Darekar, MBA & Engineering student at HTW Berlin — University of Applied Sciences. I am the only person with access to your raw answers. You can reach me at Uttam.Darekar@Student.HTW-Berlin.de.",
     },
     {
-      title: "What is collected",
-      description:
-        "Your answers, plus your role, years of experience, industry and product type. No name, no email address, no company name. Your answers are stored under a code such as P014.",
+      icon: "data",
+      title: "No name, no company",
+      summary: "Your answers are stored under a code.",
+      detail:
+        "I collect your answers plus your role, years of experience, industry and product type. No name, no email address, no company name. Everything is stored under a code such as P014.",
     },
     {
-      title: "Speaking instead of typing",
-      description:
-        "Open questions can be answered by speaking. Your browser converts speech to text on your device; only the text reaches me, and you can edit it before continuing. No audio is recorded or stored by this form.",
+      icon: "voice",
+      title: "Speak or type",
+      summary: "Speech becomes text on your device.",
+      detail:
+        "Open questions can be answered by speaking. Your browser converts speech to text on your own device; only the text reaches me, and you can edit it before continuing. No audio is recorded or stored by this form.",
     },
     {
-      title: "How it is used",
-      description:
+      icon: "use",
+      title: "Used in the thesis",
+      summary: "Anonymised, and never sent to an AI service.",
+      detail:
         "Anonymised answers and short quotations may appear in the thesis and in work arising from it. Nothing identifying you or your employer is published, and your answers are not sent to any AI service.",
     },
     {
-      title: `How long it is kept (${RETENTION_MONTHS} months)`,
-      description: `Responses are deleted within ${RETENTION_MONTHS} months of collection, once the thesis has been assessed. Anonymised extracts already published cannot be recalled.`,
+      icon: "retention",
+      title: `Deleted within ${RETENTION_MONTHS} months`,
+      summary: "Once the thesis has been assessed.",
+      detail: `Responses are deleted within ${RETENTION_MONTHS} months of collection, once the thesis has been assessed. Anonymised extracts already published cannot be recalled.`,
     },
     {
-      title: "Pausing and withdrawing",
-      description:
+      icon: "withdraw",
+      title: "Withdraw any time",
+      summary: "Email me your code and it is deleted.",
+      detail:
         "You can pause and return later. After submitting, email me your participant code and I will delete your responses — no reason needed, and no disadvantage to you.",
     },
-  ],
+  ] satisfies ConsentPoint[],
+
+  /** Label on the disclosure that reveals the full wording. */
+  detailsLabel: "Read the full details",
 
   /** Participation consent: required to proceed. */
   agreementLabel:
@@ -72,8 +96,14 @@ export const consentContent = {
    * Speaking is a separate decision from taking part, so it is asked
    * separately and never inferred from the agreement above.
    */
-  voiceConsentLabel:
-    "I also agree that my browser may convert my speech to text when I choose to answer by speaking. Optional — you can always type instead.",
+  voiceConsentLabel: "I'd also like the option to speak my answers.",
+
+  /**
+   * Why anyone would want this. Without it the checkbox reads as another
+   * permission to grant rather than an offer that saves them typing.
+   */
+  voiceConsentHint:
+    "Open questions take the longest to type. Tick this and a “Speak answer” button appears on those questions — your browser turns speech into text on your device, and you can edit it before moving on. You can still type at any point, and you can leave this unticked.",
 
   /** Shown beneath the checkboxes. */
   legalBasis:

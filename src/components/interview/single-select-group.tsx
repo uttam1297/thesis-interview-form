@@ -5,7 +5,16 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { Field, FieldLabel, FieldTitle } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { cn } from "@/lib/utils";
 import type { QuestionOption } from "@/types/interview";
+
+/**
+ * Beyond five choices a single column runs past the fold on a laptop,
+ * pushing Continue out of sight. Two columns keep the whole question — and
+ * its action — visible at once. Below `sm` it stays single-column, where
+ * scrolling is expected and two columns would be cramped.
+ */
+export const TWO_COLUMN_THRESHOLD = 5;
 
 interface SingleSelectGroupProps {
   name: string;
@@ -35,7 +44,10 @@ export function SingleSelectGroup({
       name={name}
       value={value ?? null}
       onValueChange={(next: string) => onValueChange?.(next)}
-      className="gap-2"
+      className={cn(
+        "gap-2",
+        options.length > TWO_COLUMN_THRESHOLD && "sm:grid-cols-2"
+      )}
       {...aria}
     >
       {options.map((option) => {

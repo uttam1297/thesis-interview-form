@@ -72,8 +72,12 @@ export function InterviewRunner() {
   const sections = steps
     .filter((s) => s.kind === "section-intro")
     .map((s) => ({ id: s.section.id, label: s.section.label }));
+  const currentSectionId =
+    currentStep.kind === "question" || currentStep.kind === "section-intro"
+      ? currentStep.section.id
+      : null;
   const currentSectionIndex = sections.findIndex(
-    (s) => currentStep.kind === "question" && s.id === currentStep.section.id
+    (section) => section.id === currentSectionId
   );
   const inProgress = state.status === "in_progress";
 
@@ -82,23 +86,36 @@ export function InterviewRunner() {
       background={
         currentStep.kind === "complete" ? <CompletionBackdrop /> : undefined
       }
-      // The landing lays out two columns; every other step stays a single
-      // reading column.
+      // Landing and question screens can lay out two columns. Section intros
+      // keep the same outer width as questions so an outgoing question never
+      // reflows partway through its exit.
       wide={
         currentStep.kind === "welcome" ||
         currentStep.kind === "consent" ||
-        currentStep.kind === "question"
+        currentStep.kind === "question" ||
+        currentStep.kind === "section-intro"
       }
       progress={
         showProgressRow ? (
           <div className="flex flex-col gap-1.5">
-            {showPath && (
+            {/* Keep the compact path's space reserved between sections. If it
+                were removed immediately, the outgoing question would jump
+                upward while AnimatePresence is still fading it out. */}
+            <div
+              data-slot="compact-section-path"
+              aria-hidden={!showPath}
+              className={
+                showPath
+                  ? "transition-opacity duration-150"
+                  : "pointer-events-none opacity-0 transition-opacity duration-150"
+              }
+            >
               <SectionPath
                 sections={sections}
                 currentIndex={Math.max(currentSectionIndex, 0)}
                 percent={progress.percent}
               />
-            )}
+            </div>
             {/* Kept in view: participants should see saves without scrolling. */}
             <SyncIndicator />
           </div>

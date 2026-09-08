@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface InterviewShellProps {
-  /** Landing screens use the full width for a two-column layout. */
+  /** Screens that need room for a two-column layout use the wider container. */
   wide?: boolean;
   /** Optional artwork that fills the shell behind the active screen. */
   background?: ReactNode;
@@ -58,6 +58,7 @@ export function InterviewShell({
         className="relative z-10 flex flex-1 items-center justify-center px-4 py-10 sm:px-6"
       >
         <div
+          data-slot="interview-content-width"
           className={cn(
             "flex w-full justify-center",
             wide ? "max-w-5xl" : "max-w-(--width-content)"

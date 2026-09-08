@@ -3,8 +3,8 @@
 import { AnimatePresence, motion } from "motion/react";
 
 import { OtherTabNotice } from "@/components/interview/other-tab-notice";
-import { ProgressIndicator } from "@/components/interview/progress-indicator";
 import { ResumeLink } from "@/components/interview/resume-link";
+import { SectionPath } from "@/components/interview/section-path";
 import { SyncIndicator } from "@/components/interview/sync-indicator";
 import { AlreadySubmittedScreen } from "@/components/interview/screens/already-submitted-screen";
 import { CompleteScreen } from "@/components/interview/screens/complete-screen";
@@ -38,7 +38,7 @@ function renderStep(step: Step) {
 
 /** Routes the current engine step to its screen and wraps it in the shell. */
 export function InterviewRunner() {
-  const { currentStep, progress, state } = useInterview();
+  const { currentStep, progress, state, steps } = useInterview();
   // Only guard against a second tab while there are answers to protect.
   const { hasLock, reclaim } = useSessionLock(state.status === "in_progress");
 
@@ -58,8 +58,17 @@ export function InterviewRunner() {
       </InterviewShell>
     );
   }
-  const showProgress =
-    currentStep.kind === "question" || currentStep.kind === "section-intro";
+  // The section-intro screen shows the path full size, so the compact row
+  // would only repeat it — but the save state must stay visible on both,
+  // or participants lose that reassurance between sections.
+  const showPath = currentStep.kind === "question";
+  const showProgressRow = showPath || currentStep.kind === "section-intro";
+  const sections = steps
+    .filter((s) => s.kind === "section-intro")
+    .map((s) => ({ id: s.section.id, label: s.section.label }));
+  const currentSectionIndex = sections.findIndex(
+    (s) => currentStep.kind === "question" && s.id === currentStep.section.id
+  );
   const inProgress = state.status === "in_progress";
 
   return (
@@ -68,9 +77,15 @@ export function InterviewRunner() {
       // reading column.
       wide={currentStep.kind === "welcome"}
       progress={
-        showProgress ? (
+        showProgressRow ? (
           <div className="flex flex-col gap-1.5">
-            <ProgressIndicator percent={progress.percent} />
+            {showPath && (
+              <SectionPath
+                sections={sections}
+                currentIndex={Math.max(currentSectionIndex, 0)}
+                percent={progress.percent}
+              />
+            )}
             {/* Kept in view: participants should see saves without scrolling. */}
             <SyncIndicator />
           </div>

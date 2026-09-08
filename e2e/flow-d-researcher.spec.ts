@@ -5,6 +5,7 @@ import {
   beginAndConsent,
   chooseAndContinue,
   signInAsResearcher,
+  waitForSaved,
 } from "./helpers";
 
 test("Flow D: admin routes require authentication", async ({ page }) => {
@@ -26,8 +27,7 @@ test("Flow D: researcher signs in, opens a session and exports data", async ({
   // answer reach the server before reading it back through the export.
   await beginAndConsent(page);
   await answerProfile(page, "Daily");
-  await page.waitForTimeout(1500);
-  await expect(page.getByText("Saved")).toBeVisible();
+  await waitForSaved(page);
 
   await signInAsResearcher(page);
 

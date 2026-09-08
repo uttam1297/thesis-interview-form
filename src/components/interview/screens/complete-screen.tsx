@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 
+import { DecisionFlowGraphic } from "@/components/layout/decision-flow-graphic";
 import { ScreenHeading } from "@/components/interview/screen-heading";
 import { study } from "@/config/study";
 import { useInterview } from "@/features/interview/use-interview";
@@ -65,6 +66,19 @@ export function CompleteScreen() {
             </p>
           </motion.div>
         )}
+
+        {/* Closes the loop with the landing page: the same scattered
+            evidence, now resolved. */}
+        <motion.div
+          variants={item}
+          transition={transitions.emphasized}
+          className="w-full border-t pt-6"
+        >
+          <DecisionFlowGraphic className="mx-auto h-32 w-full max-w-sm text-foreground" />
+          <p className="mt-3 text-sm text-muted-foreground">
+            Your answers become part of how this framework gets built.
+          </p>
+        </motion.div>
 
         <motion.p
           variants={item}

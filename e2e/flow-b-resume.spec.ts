@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { beginAndConsent, chooseAndContinue } from "./helpers";
+import { beginAndConsent, chooseAndContinue, waitForSaved } from "./helpers";
 
 test("Flow B: a participant leaves and resumes in the same browser", async ({
   page,
@@ -32,7 +32,7 @@ test("Flow B: a resume link continues the session in a different browser", async
 }) => {
   await beginAndConsent(page);
   await chooseAndContinue(page, "Product Owner");
-  await expect(page.getByText("Saved")).toBeVisible();
+  await waitForSaved(page);
 
   // Read the link the participant would copy, without exposing it on screen.
   const resumeUrl = await page.evaluate(() => {

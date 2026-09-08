@@ -24,6 +24,16 @@ export async function settle(page: Page) {
   await page.waitForTimeout(400);
 }
 
+/**
+ * Saving is debounced, so "Saved" on screen can still be reporting the
+ * previous answer. Tests that read data back from the server have to wait
+ * for the last one to actually land.
+ */
+export async function waitForSaved(page: Page) {
+  await page.waitForTimeout(1200);
+  await expect(page.getByText("Saved")).toBeVisible();
+}
+
 export async function typeAnswer(page: Page, text: string) {
   await page.getByRole("textbox").first().fill(text);
   await continueStep(page);

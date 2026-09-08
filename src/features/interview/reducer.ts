@@ -17,7 +17,13 @@ import type {
 export type InterviewAction =
   | { type: "HYDRATE"; state: InterviewState }
   | { type: "START"; now: string }
-  | { type: "ACCEPT_CONSENT"; consentVersion: string; now: string }
+  | {
+      type: "ACCEPT_CONSENT";
+      consentVersion: string;
+      /** Null when recording was not asked about; never inferred. */
+      recordingConsent?: boolean | null;
+      now: string;
+    }
   | {
       type: "ANSWER";
       questionId: string;
@@ -90,6 +96,7 @@ export function createInterviewReducer(config: InterviewConfig) {
             accepted: true,
             version: action.consentVersion,
             acceptedAt: action.now,
+            recordingConsent: action.recordingConsent ?? null,
           },
         };
         const next = stepAt(consented, 1);

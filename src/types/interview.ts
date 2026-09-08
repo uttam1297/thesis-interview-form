@@ -152,7 +152,11 @@ export type ResponseValue =
   | { kind: "ranking"; order: string[] }
   | { kind: "text"; text: string };
 
-export type ResponseMethod = "selected" | "typed" | "voice";
+/**
+ * How an answer was produced. "researcher" marks data entered during a live
+ * interview, so exports never present it as the participant's own wording.
+ */
+export type ResponseMethod = "selected" | "typed" | "voice" | "researcher";
 
 export interface ResponseRecord {
   questionId: string;

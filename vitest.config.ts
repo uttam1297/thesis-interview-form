@@ -13,6 +13,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // Build-time guard in the app; irrelevant when unit-testing the same
+      // modules directly.
+      "server-only": fileURLToPath(
+        new URL("./src/tests/server-only-stub.ts", import.meta.url)
+      ),
     },
   },
 });

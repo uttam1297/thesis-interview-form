@@ -120,6 +120,7 @@ export function SessionsBrowser({ sessions }: { sessions: SessionListItem[] }) {
               <th className="px-3 py-2 font-medium">Role</th>
               <th className="px-3 py-2 font-medium">Industry</th>
               <th className="px-3 py-2 font-medium">Answers</th>
+              <th className="px-3 py-2 font-medium">Duration</th>
               <th className="px-3 py-2 font-medium">Version</th>
               <th className="px-3 py-2 font-medium">Last activity</th>
             </tr>
@@ -150,6 +151,11 @@ export function SessionsBrowser({ sessions }: { sessions: SessionListItem[] }) {
                 <td className="px-3 py-2 tabular-nums">
                   {session.answeredCount}
                 </td>
+                <td className="px-3 py-2 tabular-nums text-muted-foreground">
+                  {session.durationMinutes === null
+                    ? "—"
+                    : `${session.durationMinutes} min`}
+                </td>
                 <td className="px-3 py-2 text-muted-foreground">
                   {session.questionnaireVersion}
                 </td>
@@ -161,7 +167,7 @@ export function SessionsBrowser({ sessions }: { sessions: SessionListItem[] }) {
             {filtered.length === 0 && (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={9}
                   className="px-3 py-6 text-center text-muted-foreground"
                 >
                   No sessions match these filters.

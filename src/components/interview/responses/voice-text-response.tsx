@@ -15,6 +15,9 @@ type VoiceCapableType = "voice_or_text" | "optional_elaboration";
  * Open answer with optional dictation. Speech is appended into the same
  * editable textarea, so the transcript the participant sees is the answer
  * that gets saved — there is no separate confirmation step.
+ *
+ * The textarea is always present and always usable: if dictation is
+ * unsupported, refused or fails, the participant is never blocked.
  */
 export function VoiceTextResponse({
   question,
@@ -40,29 +43,45 @@ export function VoiceTextResponse({
   );
 
   const voice = useVoiceInput({ adapter, onFinalTranscript: appendTranscript });
-  const isListening = voice.status === "listening";
+  const isActive =
+    voice.status === "listening" || voice.status === "requesting";
+  // Once refused, offering the button again just fails silently.
+  const canDictate =
+    voice.isSupported && voice.status !== "denied" && voice.status !== "error";
 
   return (
     <div className="flex flex-col gap-3">
-      {voice.isSupported ? (
+      {canDictate && (
         <div className="flex flex-wrap items-center gap-3">
           <VoiceButton
-            status={isListening ? "listening" : "idle"}
+            status={
+              voice.status === "requesting"
+                ? "requesting"
+                : voice.status === "listening"
+                  ? "listening"
+                  : "idle"
+            }
             elapsedSeconds={voice.elapsedSeconds}
             onStart={voice.start}
             onStop={voice.stop}
           />
-          <span className="text-sm text-muted-foreground">or type below</span>
+          <span className="text-sm text-muted-foreground">
+            or type your answer below
+          </span>
         </div>
-      ) : (
+      )}
+
+      {!voice.isSupported && (
         <p className="text-sm text-muted-foreground">
-          Voice input isn&apos;t available in this browser — please type your
-          answer.
+          Speaking your answer isn&apos;t supported in this browser — please
+          type instead.
         </p>
       )}
 
-      {voice.error && voice.status === "error" && (
-        <StatusMessage variant="warning">{voice.error.message}</StatusMessage>
+      {voice.error && !canDictate && voice.isSupported && (
+        <StatusMessage variant="warning">
+          {voice.error.message} You can type your answer below.
+        </StatusMessage>
       )}
 
       <Textarea
@@ -70,9 +89,7 @@ export function VoiceTextResponse({
         aria-describedby={describedById}
         rows={6}
         placeholder={
-          isListening
-            ? "Listening… your words will appear here."
-            : "Type your answer…"
+          isActive ? "Your words will appear here…" : "Type your answer…"
         }
         value={text}
         maxLength={question.validation?.maxLength}

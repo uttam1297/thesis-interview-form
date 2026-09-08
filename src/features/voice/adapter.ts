@@ -15,6 +15,8 @@ export interface VoiceError {
 export interface SpeechRecognitionHandlers {
   /** Called with recognised text. `isFinal` false = interim, may change. */
   onTranscript: (text: string, isFinal: boolean) => void;
+  /** Microphone access granted and capture has actually begun. */
+  onStart?: () => void;
   onError: (error: VoiceError) => void;
   /** Recognition stopped, whether by the user, an error, or silence. */
   onEnd: () => void;

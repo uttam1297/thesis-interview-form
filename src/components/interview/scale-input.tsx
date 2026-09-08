@@ -43,7 +43,7 @@ export function ScaleInput({
             key={point}
             value={String(point)}
             className={cn(
-              "flex size-10 cursor-pointer items-center justify-center rounded-full border text-sm font-medium transition-colors outline-none",
+              "flex size-11 cursor-pointer items-center justify-center rounded-full border text-sm font-medium transition-colors outline-none",
               "border-input bg-background text-foreground hover:bg-muted",
               "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
               "data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground"

@@ -41,6 +41,9 @@ export function NavigationControls({
         {onContinue && (
           <Button
             type="button"
+            size="lg"
+            // Comfortable primary target, especially one-handed on mobile.
+            className="min-h-11"
             onClick={onContinue}
             disabled={continueDisabled}
           >

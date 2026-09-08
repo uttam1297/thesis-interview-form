@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 
 import { StatusMessage } from "@/components/feedback/status-message";
+import { StudyHeader } from "@/components/layout/study-header";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -47,8 +48,12 @@ export function LoginForm({ next, notAResearcher }: LoginFormProps) {
         router.refresh();
       }}
     >
+      <StudyHeader className="mb-2" />
+
       <div className="flex flex-col gap-1">
-        <h1 className="text-xl font-medium">Researcher sign in</h1>
+        <h1 className="font-heading text-2xl font-medium">
+          Researcher sign in
+        </h1>
         <p className="text-sm text-muted-foreground">
           Participants do not need an account — this is the study team area.
         </p>

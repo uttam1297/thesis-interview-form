@@ -20,7 +20,9 @@ export type Step =
       id: string;
       section: InterviewSection;
       completedSection: InterviewSection | null;
-      remainingMinutes: number | null;
+      /** 1-based position among the sections this participant will see. */
+      sectionNumber: number;
+      sectionCount: number;
     }
   | {
       kind: "question";
@@ -56,19 +58,13 @@ export function buildSteps(
   );
 
   sectionsWithQuestions.forEach((section, index) => {
-    const remainingMinutes = sectionsWithQuestions
-      .slice(index)
-      .reduce<number | null>((sum, s) => {
-        if (s.estimatedMinutes === undefined) return sum;
-        return (sum ?? 0) + s.estimatedMinutes;
-      }, null);
-
     steps.push({
       kind: "section-intro",
       id: stepIdForSectionIntro(section.id),
       section,
       completedSection: index === 0 ? null : sectionsWithQuestions[index - 1],
-      remainingMinutes,
+      sectionNumber: index + 1,
+      sectionCount: sectionsWithQuestions.length,
     });
 
     visibleQuestions

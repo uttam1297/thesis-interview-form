@@ -19,6 +19,8 @@ const INACTIVITY_DAYS = 14;
 export interface SessionListItem {
   id: string;
   participantCode: string;
+  /** Minutes from start to submission; null while still in progress. */
+  durationMinutes: number | null;
   responseMode: ResponseMode;
   status: SessionStatus;
   derivedStatus: SessionStatus | "inactive";
@@ -88,6 +90,13 @@ export async function listSessions(): Promise<SessionListItem[]> {
     startedAt: row.started_at,
     lastActivityAt: row.last_activity_at,
     completedAt: row.completed_at,
+    durationMinutes: row.completed_at
+      ? Math.round(
+          (new Date(row.completed_at).getTime() -
+            new Date(row.started_at).getTime()) /
+            60000
+        )
+      : null,
     role: optionValue(
       row.responses.find((r) => r.question_key === "profile-role")?.value
     ),
@@ -312,4 +321,94 @@ export async function listResponsesByConstruct(): Promise<ConstructGroup[]> {
     construct,
     responses,
   }));
+}
+
+export interface QuestionHealth {
+  questionKey: string;
+  prompt: string;
+  construct: string;
+  answered: number;
+  skipped: number;
+  /** Sessions that stopped on this question without answering it. */
+  lastSeen: number;
+}
+
+/**
+ * Pilot signal: which questions get skipped, and where unfinished sessions
+ * come to a halt. Derived from responses already collected — no extra
+ * behavioural tracking of participants.
+ */
+export async function getQuestionHealth(): Promise<QuestionHealth[]> {
+  const supabase = await createServerSupabaseClient();
+
+  const { data, error } = await supabase.from("responses").select(
+    `question_key, construct, skipped, value,
+       questionnaire_questions ( definition, position )`
+  );
+  if (error)
+    throw new Error(`Could not load question health: ${error.message}`);
+
+  const { data: stalled } = await supabase
+    .from("sessions")
+    .select("current_step_id")
+    .eq("status", "in_progress");
+
+  const stalledCounts = new Map<string, number>();
+  for (const row of stalled ?? []) {
+    const key = row.current_step_id.startsWith("question:")
+      ? row.current_step_id.slice("question:".length)
+      : null;
+    if (key) stalledCounts.set(key, (stalledCounts.get(key) ?? 0) + 1);
+  }
+
+  const rows = (data ?? []) as unknown as Array<{
+    question_key: string;
+    construct: string;
+    skipped: boolean;
+    value: unknown;
+    questionnaire_questions: {
+      definition: { prompt?: string } | null;
+      position: number;
+    } | null;
+  }>;
+
+  const byQuestion = new Map<string, QuestionHealth & { position: number }>();
+  for (const row of rows) {
+    const existing = byQuestion.get(row.question_key) ?? {
+      questionKey: row.question_key,
+      prompt:
+        row.questionnaire_questions?.definition?.prompt ?? row.question_key,
+      construct: row.construct,
+      answered: 0,
+      skipped: 0,
+      lastSeen: stalledCounts.get(row.question_key) ?? 0,
+      position: row.questionnaire_questions?.position ?? 0,
+    };
+    if (row.skipped || row.value === null) existing.skipped += 1;
+    else existing.answered += 1;
+    byQuestion.set(row.question_key, existing);
+  }
+
+  // Include questions nobody has reached yet, so gaps are visible too.
+  for (const [key, count] of stalledCounts) {
+    if (!byQuestion.has(key)) {
+      byQuestion.set(key, {
+        questionKey: key,
+        prompt: key,
+        construct: "",
+        answered: 0,
+        skipped: 0,
+        lastSeen: count,
+        position: Number.MAX_SAFE_INTEGER,
+      });
+    }
+  }
+
+  return [...byQuestion.values()]
+    .sort((a, b) => a.position - b.position)
+    .map((entry) => {
+      const { position, ...rest } = entry;
+      void position;
+      return rest;
+    });
 }

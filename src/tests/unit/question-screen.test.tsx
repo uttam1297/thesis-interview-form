@@ -9,11 +9,20 @@ import {
   MemoryDraftStorage,
   MemorySubmissionRepository,
 } from "@/features/interview/persistence/memory";
-import { unsupportedSpeechAdapter } from "@/features/voice/adapter";
+import {
+  unsupportedSpeechAdapter,
+  type SpeechRecognitionAdapter,
+} from "@/features/voice/adapter";
 import { VoiceAdapterProvider } from "@/features/voice/voice-adapter-context";
 import { fixedNow, testConfig } from "@/tests/fixtures/config";
 
-function Harness({ children }: { children: ReactNode }) {
+function Harness({
+  children,
+  speechAdapter = unsupportedSpeechAdapter,
+}: {
+  children: ReactNode;
+  speechAdapter?: SpeechRecognitionAdapter;
+}) {
   return (
     <InterviewProvider
       config={testConfig}
@@ -23,7 +32,7 @@ function Harness({ children }: { children: ReactNode }) {
       }}
       now={() => fixedNow}
     >
-      <VoiceAdapterProvider adapter={unsupportedSpeechAdapter}>
+      <VoiceAdapterProvider adapter={speechAdapter}>
         {children}
       </VoiceAdapterProvider>
     </InterviewProvider>
@@ -76,6 +85,47 @@ describe("question flow through the runner", () => {
         screen.getByRole("heading", { name: "What is your role?" })
       ).toHaveFocus()
     );
+  });
+
+  it("offers speech on open questions when the participant consented", async () => {
+    const user = userEvent.setup();
+    const speechAdapter: SpeechRecognitionAdapter = {
+      isSupported: true,
+      start() {},
+      stop() {},
+    };
+    render(
+      <Harness speechAdapter={speechAdapter}>
+        <InterviewRunner />
+      </Harness>
+    );
+
+    await user.click(
+      await screen.findByRole("button", { name: "Begin the interview" })
+    );
+    await user.click(
+      await screen.findByRole("checkbox", { name: /agree to take part/i })
+    );
+    await user.click(
+      screen.getByRole("checkbox", { name: /option to speak my answers/i })
+    );
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    await user.click(await screen.findByRole("button", { name: "Continue" }));
+    await user.click(
+      await screen.findByRole("radio", { name: "Product Manager" })
+    );
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(await screen.findByRole("radio", { name: "Yes" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    await user.click(await screen.findByRole("button", { name: "Continue" }));
+    expect(
+      await screen.findByRole("heading", { name: "How do AI tools support you?" })
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: /speak answer/i })
+    ).toBeInTheDocument();
   });
 
   it("offers Skip on optional questions and Back restores the previous answer", async () => {

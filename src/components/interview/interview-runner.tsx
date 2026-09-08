@@ -7,7 +7,10 @@ import { ResumeLink } from "@/components/interview/resume-link";
 import { SectionPath } from "@/components/interview/section-path";
 import { SyncIndicator } from "@/components/interview/sync-indicator";
 import { AlreadySubmittedScreen } from "@/components/interview/screens/already-submitted-screen";
-import { CompleteScreen } from "@/components/interview/screens/complete-screen";
+import {
+  CompleteScreen,
+  CompletionBackdrop,
+} from "@/components/interview/screens/complete-screen";
 import { ConsentScreen } from "@/components/interview/screens/consent-screen";
 import { QuestionScreen } from "@/components/interview/screens/question-screen";
 import {
@@ -76,6 +79,9 @@ export function InterviewRunner() {
 
   return (
     <InterviewShell
+      background={
+        currentStep.kind === "complete" ? <CompletionBackdrop /> : undefined
+      }
       // The landing lays out two columns; every other step stays a single
       // reading column.
       wide={

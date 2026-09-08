@@ -4,8 +4,10 @@ import { CheckboxGroup } from "@base-ui/react/checkbox-group";
 import { Check } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
+import { TWO_COLUMN_THRESHOLD } from "@/components/interview/single-select-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel, FieldTitle } from "@/components/ui/field";
+import { cn } from "@/lib/utils";
 import type { QuestionOption } from "@/types/interview";
 
 interface MultiSelectGroupProps {
@@ -32,7 +34,10 @@ export function MultiSelectGroup({
     <CheckboxGroup
       value={value}
       onValueChange={(next: string[]) => onValueChange?.(next)}
-      className="flex flex-col gap-2"
+      className={cn(
+        "grid gap-2",
+        options.length > TWO_COLUMN_THRESHOLD && "sm:grid-cols-2"
+      )}
       {...aria}
     >
       {options.map((option) => {

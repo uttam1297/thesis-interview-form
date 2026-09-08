@@ -21,7 +21,7 @@ export async function typeAnswer(page: Page, text: string) {
 /** Walks welcome → consent → first section intro. */
 export async function beginAndConsent(page: Page) {
   await page.goto("/interview");
-  await page.getByRole("button", { name: "Begin" }).click();
+  await page.getByRole("button", { name: "Begin the interview" }).click();
   await page.getByRole("checkbox").click();
   await continueStep(page);
   await expect(page.getByRole("heading", { name: "About you" })).toBeVisible();

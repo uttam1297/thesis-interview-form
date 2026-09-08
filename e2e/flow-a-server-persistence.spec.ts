@@ -40,7 +40,9 @@ test("Flow A: anonymous participant consents, answers, autosaves to the server a
 
   // The session is closed: reloading offers a fresh interview, not the old one.
   await page.reload();
-  await expect(page.getByRole("button", { name: "Begin" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Begin the interview" })
+  ).toBeVisible();
 });
 
 test("Flow A: a required question still blocks Continue", async ({ page }) => {

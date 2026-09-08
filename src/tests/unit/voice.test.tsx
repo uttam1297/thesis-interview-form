@@ -103,6 +103,7 @@ describe("VoiceTextResponse", () => {
           value={null}
           onChange={onChange}
           labelId="l"
+          speechConsented
         />
       </VoiceAdapterProvider>
     );
@@ -132,6 +133,7 @@ describe("VoiceTextResponse", () => {
           value={{ kind: "text", text: "Already typed" }}
           onChange={onChange}
           labelId="l"
+          speechConsented
         />
       </VoiceAdapterProvider>
     );
@@ -147,5 +149,26 @@ describe("VoiceTextResponse", () => {
       { kind: "text", text: "Already typed and dictated" },
       "voice"
     );
+  });
+
+  it("offers no dictation when speech consent was not given", () => {
+    const adapter = createFakeAdapter();
+    render(
+      <VoiceAdapterProvider adapter={adapter}>
+        <VoiceTextResponse
+          question={question}
+          value={null}
+          onChange={() => {}}
+          labelId="l"
+          speechConsented={false}
+        />
+      </VoiceAdapterProvider>
+    );
+
+    // Declining on the consent screen has to actually switch it off.
+    expect(
+      screen.queryByRole("button", { name: /speak answer/i })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
   });
 });

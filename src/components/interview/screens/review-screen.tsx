@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
-
 import { StatusMessage } from "@/components/feedback/status-message";
 import { ScreenHeading } from "@/components/interview/screen-heading";
 import { Button } from "@/components/ui/button";
@@ -9,7 +7,6 @@ import { formatAnswer } from "@/features/interview/format-answer";
 import { visibleQuestionSteps } from "@/features/interview/steps";
 import { useInterview } from "@/features/interview/use-interview";
 import { isRecordComplete } from "@/features/interview/validate-response";
-import { sectionVariants, transitions } from "@/lib/motion";
 
 export function ReviewScreen() {
   const { config, state, steps, dispatch, submit, submitting, submitError } =
@@ -23,13 +20,7 @@ export function ReviewScreen() {
   );
 
   return (
-    <motion.div
-      variants={sectionVariants}
-      initial="enter"
-      animate="center"
-      transition={transitions.base}
-      className="flex w-full max-w-(--width-content) flex-col gap-6"
-    >
+    <div className="flex w-full max-w-(--width-content) flex-col gap-6">
       <div className="flex flex-col gap-2">
         <ScreenHeading>Review your answers</ScreenHeading>
         <p className="text-sm text-muted-foreground">
@@ -112,6 +103,6 @@ export function ReviewScreen() {
           {submitting ? "Submitting…" : "Submit"}
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 }

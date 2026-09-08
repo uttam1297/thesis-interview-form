@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 
+import { cn } from "@/lib/utils";
+
 interface InterviewShellProps {
+  /** Landing screens use the full width for a two-column layout. */
+  wide?: boolean;
   /** Optional progress row pinned to the top (omitted on welcome/consent/complete). */
   progress?: ReactNode;
   children: ReactNode;
@@ -16,9 +20,16 @@ export function InterviewShell({
   progress,
   children,
   footer,
+  wide = false,
 }: InterviewShellProps) {
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="relative flex min-h-dvh flex-col">
+      {wide && (
+        <div
+          aria-hidden="true"
+          className="surface-grid pointer-events-none absolute inset-0 text-foreground"
+        />
+      )}
       <a
         href="#interview-content"
         className="sr-only rounded-lg bg-background px-4 py-2 text-sm font-medium ring-2 ring-ring focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
@@ -34,7 +45,12 @@ export function InterviewShell({
         id="interview-content"
         className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6"
       >
-        <div className="flex w-full max-w-(--width-content) justify-center">
+        <div
+          className={cn(
+            "flex w-full justify-center",
+            wide ? "max-w-5xl" : "max-w-(--width-content)"
+          )}
+        >
           {children}
         </div>
       </main>

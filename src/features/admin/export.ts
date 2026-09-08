@@ -50,19 +50,39 @@ function renderAnswer(
   });
 }
 
+/**
+ * Supabase caps a single request at 1000 rows, so the export pages through
+ * the table. Without this, a study large enough to matter would silently
+ * lose responses from its export — the worst possible failure for research
+ * data, because nothing looks wrong.
+ */
+const PAGE_SIZE = 1000;
+
 async function loadRows(): Promise<ExportRow[]> {
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.from("responses").select(
-    `question_key, construct, response_type, value, skipped, method, recorded_at,
+
+  const collected: unknown[] = [];
+  for (let page = 0; ; page += 1) {
+    const { data, error } = await supabase
+      .from("responses")
+      .select(
+        `question_key, construct, response_type, value, skipped, method, recorded_at,
        sessions ( response_mode, status, started_at,
                   participants ( participant_code ),
                   questionnaire_versions ( version ) ),
        questionnaire_questions ( definition, position )`
-  );
+      )
+      // Paging is only complete over a stable order.
+      .order("recorded_at", { ascending: true })
+      .order("question_key", { ascending: true })
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
-  if (error) throw new Error(`Export query failed: ${error.message}`);
+    if (error) throw new Error(`Export query failed: ${error.message}`);
+    collected.push(...(data ?? []));
+    if (!data || data.length < PAGE_SIZE) break;
+  }
 
-  const rows = (data ?? []) as unknown as Array<{
+  const rows = collected as unknown as Array<{
     question_key: string;
     construct: string;
     response_type: string;

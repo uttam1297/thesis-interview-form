@@ -3,6 +3,7 @@
 import { CheckCircle2 } from "lucide-react";
 
 import { ScreenHeading } from "@/components/interview/screen-heading";
+import { study } from "@/config/study";
 import { useInterview } from "@/features/interview/use-interview";
 
 /**
@@ -31,9 +32,15 @@ export function AlreadySubmittedScreen() {
           </span>
         </p>
       )}
-      <p className="text-xs text-muted-foreground">
-        If you would like your responses withdrawn, contact the study team at
-        research@example.edu with your reference.
+      <p className="text-sm text-muted-foreground">
+        If you would like your responses withdrawn, contact me at{" "}
+        <a
+          href={`mailto:${study.contactEmail}`}
+          className="underline underline-offset-4 hover:text-foreground"
+        >
+          {study.contactEmail}
+        </a>{" "}
+        with your reference.
       </p>
     </div>
   );

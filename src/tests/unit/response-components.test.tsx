@@ -113,13 +113,13 @@ describe("response components render by type and report values", () => {
       "selected"
     );
 
-    await user.click(screen.getByRole("button", { name: "Move Effort up" }));
+    await user.click(screen.getByRole("button", { name: /Move Effort up/ }));
     expect(onChange).toHaveBeenLastCalledWith(
       { kind: "ranking", order: ["effort", "impact"] },
       "selected"
     );
     expect(
-      screen.getByRole("button", { name: "Move Impact up" })
+      screen.getByRole("button", { name: /Move Impact up/ })
     ).toBeDisabled();
   });
 

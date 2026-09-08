@@ -54,6 +54,12 @@ interface QuestionBase {
   prompt: string;
   /** Optional supporting text under the prompt. */
   description?: string;
+  /**
+   * Optional framing shown alongside the question rather than in it — a
+   * nudge about how to answer, kept out of the prompt so the research
+   * wording stays exactly as written.
+   */
+  aside?: string;
   required: boolean;
   /** Question is shown only when every condition holds. */
   showIf?: Condition[];

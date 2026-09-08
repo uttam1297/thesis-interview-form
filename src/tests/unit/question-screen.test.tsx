@@ -31,10 +31,13 @@ function Harness({ children }: { children: ReactNode }) {
 }
 
 async function reachFirstQuestion(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(await screen.findByRole("button", { name: "Begin" }));
-  await user.click(screen.getByRole("checkbox"));
-  await user.click(screen.getByRole("button", { name: "Continue" }));
-  await user.click(screen.getByRole("button", { name: "Continue" })); // section intro
+  await user.click(
+    await screen.findByRole("button", { name: "Begin the interview" })
+  );
+  await user.click(await screen.findByRole("checkbox"));
+  await user.click(await screen.findByRole("button", { name: "Continue" }));
+  // Section intro.
+  await user.click(await screen.findByRole("button", { name: "Continue" }));
   await screen.findByRole("heading", { name: "What is your role?" });
 }
 
@@ -49,7 +52,7 @@ describe("question flow through the runner", () => {
     await reachFirstQuestion(user);
 
     await user.click(screen.getByRole("button", { name: "Continue" }));
-    expect(screen.getByRole("alert")).toHaveTextContent(/needs an answer/i);
+    expect(await screen.findByText(/needs an answer/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("radio", { name: "Product Manager" }));
     await user.click(screen.getByRole("button", { name: "Continue" }));
@@ -89,7 +92,7 @@ describe("question flow through the runner", () => {
       screen.queryByRole("button", { name: "Skip for now" })
     ).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Back" }));
+    await user.click(await screen.findByRole("button", { name: "Back" }));
     await screen.findByRole("heading", { name: "What is your role?" });
     expect(screen.getByRole("radio", { name: "Analyst" })).toBeChecked();
   });

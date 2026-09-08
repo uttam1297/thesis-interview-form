@@ -7,8 +7,8 @@ is to find confusing wording and friction while it is still cheap to fix.
 
 - [ ] Consent text in `src/features/consent/content.ts` replaced with the
       university-approved wording (retention, withdrawal, supervisor contact).
-- [ ] Contact address in the completion and already-submitted screens updated
-      from `research@example.edu`.
+- [ ] Contact address in `src/config/study.ts` is the one participants should
+      actually use for questions and withdrawal requests.
 - [ ] Questionnaire published: `npm run questionnaire:publish`.
 - [ ] Version number noted here, so pilot responses can be told apart from real
       ones later: `__________`

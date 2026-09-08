@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import { useId, useState } from "react";
 
 import { StatusMessage } from "@/components/feedback/status-message";
@@ -11,7 +10,6 @@ import { SectionHeader } from "@/components/interview/section-header";
 import type { Step } from "@/features/interview/steps";
 import { useInterview } from "@/features/interview/use-interview";
 import { validateResponse } from "@/features/interview/validate-response";
-import { questionVariants, transitions } from "@/lib/motion";
 import type { ResponseMethod, ResponseValue } from "@/types/interview";
 
 interface QuestionScreenProps {
@@ -55,14 +53,7 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
   };
 
   return (
-    <motion.div
-      key={question.id}
-      variants={questionVariants}
-      initial="enter"
-      animate="center"
-      transition={transitions.base}
-      className="flex w-full max-w-(--width-content-narrow) flex-col gap-6"
-    >
+    <div className="flex w-full max-w-(--width-content-narrow) flex-col gap-6">
       <div className="flex flex-col gap-2">
         <SectionHeader section={section.label} />
         <ScreenHeading id={labelId}>{question.prompt}</ScreenHeading>
@@ -119,6 +110,6 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
           state.returnToReview ? "Save and return to review" : "Continue"
         }
       />
-    </motion.div>
+    </div>
   );
 }

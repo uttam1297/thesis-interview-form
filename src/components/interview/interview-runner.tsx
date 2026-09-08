@@ -1,5 +1,7 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
+
 import { OtherTabNotice } from "@/components/interview/other-tab-notice";
 import { ProgressIndicator } from "@/components/interview/progress-indicator";
 import { ResumeLink } from "@/components/interview/resume-link";
@@ -15,6 +17,7 @@ import { InterviewShell } from "@/components/layout/interview-shell";
 import type { Step } from "@/features/interview/steps";
 import { useInterview } from "@/features/interview/use-interview";
 import { useSessionLock } from "@/features/interview/use-session-lock";
+import { stepVariants, transitions } from "@/lib/motion";
 
 function renderStep(step: Step) {
   switch (step.kind) {
@@ -75,10 +78,26 @@ export function InterviewRunner() {
       }
       footer={inProgress ? <ResumeLink /> : undefined}
     >
-      {/* Keyed so each step mounts fresh: entrance animation + heading focus. */}
-      <div key={currentStep.id} className="flex w-full justify-center">
-        {renderStep(currentStep)}
-      </div>
+      {/*
+        Step transitions live here rather than in each screen, so every move
+        through the interview reads the same: the current step leaves before
+        the next arrives, which keeps the page from jumping. Keying by step
+        id also remounts the screen, which is what moves focus to its
+        heading.
+      */}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={currentStep.id}
+          variants={stepVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={transitions.base}
+          className="flex w-full justify-center"
+        >
+          {renderStep(currentStep)}
+        </motion.div>
+      </AnimatePresence>
     </InterviewShell>
   );
 }

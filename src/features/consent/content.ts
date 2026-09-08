@@ -7,7 +7,7 @@ export const consentContent = {
   version: "v1-draft",
   title: "Before we begin",
   intro:
-    "I am researching how product professionals use data and AI in decision-making. Participation is voluntary, and you can stop at any point.",
+    "I am researching how professionals use data and AI in decision-making. Participation is voluntary, and you can stop at any point.",
   points: [
     {
       title: "Estimated duration",

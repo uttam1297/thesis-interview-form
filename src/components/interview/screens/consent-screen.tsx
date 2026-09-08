@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import { useId, useState } from "react";
 
 import { NavigationControls } from "@/components/interview/navigation-controls";
@@ -9,7 +8,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { consentContent } from "@/features/consent/content";
 import { useInterview } from "@/features/interview/use-interview";
-import { sectionVariants, transitions } from "@/lib/motion";
 
 export function ConsentScreen() {
   const { dispatch, state } = useInterview();
@@ -17,13 +15,7 @@ export function ConsentScreen() {
   const checkboxId = useId();
 
   return (
-    <motion.div
-      variants={sectionVariants}
-      initial="enter"
-      animate="center"
-      transition={transitions.base}
-      className="flex w-full max-w-(--width-content-narrow) flex-col gap-6"
-    >
+    <div className="flex w-full max-w-(--width-content-narrow) flex-col gap-6">
       <div className="flex flex-col gap-2">
         <ScreenHeading>{consentContent.title}</ScreenHeading>
         <p className="text-sm text-muted-foreground">{consentContent.intro}</p>
@@ -61,6 +53,6 @@ export function ConsentScreen() {
           })
         }
       />
-    </motion.div>
+    </div>
   );
 }

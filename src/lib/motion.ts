@@ -12,6 +12,24 @@ export const transitions = {
   emphasized: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } satisfies Transition,
 };
 
+/**
+ * The transition every interview step uses. Owned centrally so moving
+ * between a section intro, a question and the review all feel like one
+ * motion rather than several.
+ */
+export const stepVariants: Variants = {
+  enter: { opacity: 0, y: 8 },
+  center: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
+
+/*
+ * Deliberately no pointer-events juggling here. Disabling input on the
+ * outgoing screen would guard a ~250ms window, but it makes interactivity
+ * depend on an animation completing — and if animations do not run, the
+ * interface would be dead. A brief overlap is the safer failure.
+ */
+
 /** Question-to-question transition: communicates forward progression. */
 export const questionVariants: Variants = {
   enter: { opacity: 0, y: 12 },

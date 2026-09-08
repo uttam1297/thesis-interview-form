@@ -13,6 +13,9 @@ import type { InterviewQuestion, ResponseValue } from "@/types/interview";
 export type ResponseMode = Database["public"]["Enums"]["response_mode"];
 export type SessionStatus = Database["public"]["Enums"]["session_status"];
 
+/** Supabase returns at most 1000 rows per request. */
+const RESPONSE_PAGE_SIZE = 1000;
+
 /** A session with no activity for this long is treated as abandoned. */
 const INACTIVITY_DAYS = 14;
 
@@ -277,18 +280,28 @@ export interface ConstructGroup {
 /** Cross-participant view, grouped by construct, for qualitative coding. */
 export async function listResponsesByConstruct(): Promise<ConstructGroup[]> {
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("responses")
-    .select(
-      `question_key, construct, value, skipped, recorded_at,
+
+  // Paged for the same reason as the export: a single request stops at
+  // 1000 rows, which would quietly hide later participants from this view.
+  const collected: unknown[] = [];
+  for (let page = 0; ; page += 1) {
+    const { data, error } = await supabase
+      .from("responses")
+      .select(
+        `question_key, construct, value, skipped, recorded_at,
        sessions ( response_mode, participants ( participant_code ) ),
        questionnaire_questions ( definition, position )`
-    )
-    .order("construct", { ascending: true });
+      )
+      .order("construct", { ascending: true })
+      .order("recorded_at", { ascending: true })
+      .range(page * RESPONSE_PAGE_SIZE, (page + 1) * RESPONSE_PAGE_SIZE - 1);
 
-  if (error) throw new Error(`Could not load responses: ${error.message}`);
+    if (error) throw new Error(`Could not load responses: ${error.message}`);
+    collected.push(...(data ?? []));
+    if (!data || data.length < RESPONSE_PAGE_SIZE) break;
+  }
 
-  const rows = (data ?? []) as unknown as Array<{
+  const rows = collected as unknown as Array<{
     question_key: string;
     construct: string;
     value: unknown;

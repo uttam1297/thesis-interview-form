@@ -11,6 +11,17 @@ export async function chooseAndContinue(page: Page, option: string | RegExp) {
 
 export async function continueStep(page: Page) {
   await page.getByRole("button", { name: "Continue" }).first().click();
+  await settle(page);
+}
+
+/**
+ * Steps animate out before the next one mounts, so a locator resolved
+ * immediately after Continue can still match the leaving screen. Waiting for
+ * the transition keeps the helpers acting on the screen a participant would
+ * actually be looking at.
+ */
+export async function settle(page: Page) {
+  await page.waitForTimeout(400);
 }
 
 export async function typeAnswer(page: Page, text: string) {
@@ -49,7 +60,8 @@ export async function answerProfile(
 export async function answerCoreQuestions(page: Page) {
   await continueStep(page); // How decisions happen intro
   await typeAnswer(page, "We start from a metric drop and work backwards.");
-  await page.getByRole("button", { name: "Skip for now" }).click();
+  // The follow-up on what made the decision unusual is required from 2.3.0.
+  await typeAnswer(page, "Two teams disagreed on what the metric meant.");
   await page.getByRole("checkbox", { name: "Product usage analytics" }).click();
   await continueStep(page);
   await typeAnswer(page, "Analytics frames the options; leadership decides.");

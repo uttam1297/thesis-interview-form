@@ -22,7 +22,7 @@ const SOME_AI_USE = {
 } as const;
 
 const rawConfig = {
-  version: "2.2.0",
+  version: "2.3.0",
   sections: [
     {
       id: "profile",
@@ -94,8 +94,7 @@ const rawConfig = {
       construct: "participant_profile",
       sectionId: "profile",
       title: "Years of experience",
-      prompt:
-        "How many years of relevant product or analytics experience do you have?",
+      prompt: "How many years of relevant experience do you have?",
       required: true,
       responseType: "single_select",
       options: [
@@ -203,9 +202,10 @@ const rawConfig = {
       title: "Decision process — example",
       prompt:
         "Is there anything that made this particular decision easier or harder than usual?",
-      required: false,
-      responseType: "optional_elaboration",
-      parentQuestionId: "decision-process",
+      // Required from 2.3.0: what makes a decision unusually hard is where
+      // the useful evidence sits, and it was being skipped.
+      required: true,
+      responseType: "voice_or_text",
     },
 
     // 2. Current data, tools and evidence
@@ -284,15 +284,15 @@ const rawConfig = {
       id: "data-confidence",
       construct: "data_quality",
       sectionId: "data-ai",
-      title: "Confidence in data",
+      title: "Availability of good data",
       prompt:
-        "In general, how confident are you that the data available to you is reliable?",
+        "How often do you have the data you need, at the quality you need, when a decision has to be made?",
       required: true,
       responseType: "likert_scale",
       min: 1,
       max: 5,
-      minLabel: "Not confident",
-      maxLabel: "Very confident",
+      minLabel: "Rarely",
+      maxLabel: "Almost always",
     },
     {
       id: "data-quality",
@@ -300,7 +300,7 @@ const rawConfig = {
       sectionId: "data-ai",
       title: "Judging data reliability",
       prompt:
-        "How do you determine whether the available data is reliable and sufficient enough to support a decision?",
+        "When the data is thin or you doubt it, how do you decide whether to act on it anyway?",
       required: true,
       responseType: "voice_or_text",
       researchMetadata: {

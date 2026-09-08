@@ -10,7 +10,10 @@ import { AlreadySubmittedScreen } from "@/components/interview/screens/already-s
 import { CompleteScreen } from "@/components/interview/screens/complete-screen";
 import { ConsentScreen } from "@/components/interview/screens/consent-screen";
 import { QuestionScreen } from "@/components/interview/screens/question-screen";
-import { ReviewScreen } from "@/components/interview/screens/review-screen";
+import {
+  ReviewActions,
+  ReviewScreen,
+} from "@/components/interview/screens/review-screen";
 import { SectionIntroScreen } from "@/components/interview/screens/section-intro-screen";
 import { WelcomeScreen } from "@/components/interview/screens/welcome-screen";
 import { InterviewShell } from "@/components/layout/interview-shell";
@@ -96,6 +99,9 @@ export function InterviewRunner() {
         ) : undefined
       }
       footer={inProgress ? <ResumeLink /> : undefined}
+      fixedFooter={
+        currentStep.kind === "review" ? <ReviewActions /> : undefined
+      }
     >
       {/*
         Step transitions live here rather than in each screen, so every move

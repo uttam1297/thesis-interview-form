@@ -10,6 +10,8 @@ interface InterviewShellProps {
   children: ReactNode;
   /** Optional Back/Continue row pinned to the bottom. */
   footer?: ReactNode;
+  /** Optional action row kept visible above the bottom of the viewport. */
+  fixedFooter?: ReactNode;
 }
 
 /**
@@ -20,10 +22,13 @@ export function InterviewShell({
   progress,
   children,
   footer,
+  fixedFooter,
   wide = false,
 }: InterviewShellProps) {
   return (
-    <div className="relative flex min-h-dvh flex-col">
+    <div
+      className={cn("relative flex min-h-dvh flex-col", fixedFooter && "pb-24")}
+    >
       {wide && (
         <div
           aria-hidden="true"
@@ -57,6 +62,16 @@ export function InterviewShell({
       {footer && (
         <div className="mx-auto w-full max-w-(--width-content) px-4 pb-6 sm:px-6 sm:pb-8">
           {footer}
+        </div>
+      )}
+      {fixedFooter && (
+        <div
+          data-slot="interview-fixed-footer"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-background/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-20px_color-mix(in_oklch,var(--foreground),transparent_55%)] backdrop-blur-sm sm:px-6"
+        >
+          <div className="mx-auto w-full max-w-(--width-content)">
+            {fixedFooter}
+          </div>
         </div>
       )}
     </div>

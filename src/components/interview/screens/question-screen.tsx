@@ -99,6 +99,7 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
           value={value}
           onChange={handleChange}
           labelId={labelId}
+          speechConsented={state.consent?.recordingConsent === true}
           // Description, guidance and any validation error are all announced
           // with the control they belong to.
           describedById={

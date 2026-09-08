@@ -4,12 +4,12 @@ import { describe, expect, it } from "vitest";
 import { AnswerConstellation } from "@/components/interview/answer-constellation";
 
 describe("AnswerConstellation", () => {
-  it("describes progress through the section for screen readers", () => {
-    render(<AnswerConstellation total={5} answered={2} currentIndex={2} />);
+  it("describes progress through the interview for screen readers", () => {
+    render(<AnswerConstellation total={22} answered={9} currentIndex={9} />);
 
     expect(
       screen.getByRole("img", {
-        name: "2 of 5 questions answered in this section",
+        name: "9 of 22 questions answered so far",
       })
     ).toBeInTheDocument();
   });
@@ -19,8 +19,9 @@ describe("AnswerConstellation", () => {
       <AnswerConstellation total={6} answered={3} currentIndex={3} />
     );
 
-    // Six points, plus the ring around the current one.
-    expect(container.querySelectorAll("circle")).toHaveLength(7);
+    // Six points, the ring around the current one, and a fading halo on
+    // each of the three answered points.
+    expect(container.querySelectorAll("circle")).toHaveLength(6 + 1 + 3);
   });
 
   it("joins only the points that have been answered", () => {

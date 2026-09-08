@@ -38,15 +38,13 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
   const record = state.responses[question.id];
   const value = record?.value ?? null;
 
-  // The constellation is built from this section's own questions, so it
-  // fills in as the participant works through the section they are in.
-  const sectionQuestions = visibleQuestionSteps(steps).filter(
-    (s) => s.section.id === section.id
-  );
-  const currentIndex = sectionQuestions.findIndex(
+  // The constellation spans the whole interview rather than resetting each
+  // section, so it keeps accumulating from the first question to the last.
+  const allQuestions = visibleQuestionSteps(steps);
+  const currentIndex = allQuestions.findIndex(
     (s) => s.question.id === question.id
   );
-  const answeredInSection = sectionQuestions.filter((s) =>
+  const answeredCount = allQuestions.filter((s) =>
     isRecordComplete(s.question, state.responses[s.question.id])
   ).length;
 
@@ -135,14 +133,14 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
       <aside className="order-last hidden w-full lg:order-none lg:block lg:w-auto">
         <div className="rounded-2xl border bg-card p-8 shadow-(--shadow-subtle)">
           <AnswerConstellation
-            total={sectionQuestions.length}
-            answered={answeredInSection}
+            total={allQuestions.length}
+            answered={answeredCount}
             currentIndex={Math.max(currentIndex, 0)}
-            className="h-52 w-64 text-foreground"
+            className="h-56 w-64 text-foreground"
           />
           <p className="mt-4 max-w-64 text-sm text-muted-foreground">
             {question.aside ??
-              `${answeredInSection} of ${sectionQuestions.length} answered in ${section.label.toLowerCase()}.`}
+              `${answeredCount} of ${allQuestions.length} answered so far.`}
           </p>
         </div>
       </aside>

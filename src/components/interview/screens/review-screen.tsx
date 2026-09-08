@@ -9,8 +9,7 @@ import { useInterview } from "@/features/interview/use-interview";
 import { isRecordComplete } from "@/features/interview/validate-response";
 
 export function ReviewScreen() {
-  const { config, state, steps, dispatch, submit, submitting, submitError } =
-    useInterview();
+  const { config, state, steps, dispatch } = useInterview();
   const questionSteps = visibleQuestionSteps(steps);
 
   const incomplete = questionSteps.filter(
@@ -86,11 +85,28 @@ export function ReviewScreen() {
           </section>
         );
       })}
+    </div>
+  );
+}
 
+export function ReviewActions() {
+  const { state, steps, dispatch, submit, submitting, submitError } =
+    useInterview();
+  const incomplete = visibleQuestionSteps(steps).filter(
+    ({ question }) =>
+      question.required &&
+      !isRecordComplete(question, state.responses[question.id])
+  );
+
+  return (
+    <div
+      className="flex flex-col gap-2"
+      role="group"
+      aria-label="Review actions"
+    >
       {submitError && (
         <StatusMessage variant="warning">{submitError}</StatusMessage>
       )}
-
       <div className="flex items-center justify-between gap-4">
         <Button variant="ghost" onClick={() => dispatch({ type: "BACK" })}>
           Back

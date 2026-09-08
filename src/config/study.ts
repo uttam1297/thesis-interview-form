@@ -10,7 +10,7 @@ export const study = {
   shortTitle: "From Data to Product Decisions",
   institution: "HTW Berlin — University of Applied Sciences",
   programme: "Master's thesis research",
-  contactEmail: "uttamdarekar@proton.me",
+  contactEmail: "Uttam.Darekar@Student.HTW-Berlin.de",
   logo: {
     src: "/images/htw-logo.png",
     alt: "HTW Berlin, University of Applied Sciences",

@@ -112,3 +112,33 @@ test("Flow D: a participant cannot reach another participant's session", async (
 
   await attackerContext.close();
 });
+
+test("Flow D: a withdrawal request deletes that participant's responses", async ({
+  page,
+}) => {
+  // A session to withdraw.
+  await beginAndConsent(page);
+  await answerProfile(page, "Daily");
+  await waitForSaved(page);
+
+  await signInAsResearcher(page);
+  const participant = page.getByRole("link", { name: /^P\d{3}$/ }).first();
+  const participantCode = (await participant.textContent())?.trim();
+  await participant.click();
+
+  await expect(page.getByText("Responses by construct")).toBeVisible();
+
+  // Consent promises deletion on request, so it has to be a real action.
+  await page
+    .getByRole("button", { name: `Withdraw ${participantCode}` })
+    .click();
+  await page
+    .getByRole("button", { name: "Delete responses permanently" })
+    .click();
+
+  await expect(page.getByText(/This participant withdrew/i)).toBeVisible();
+
+  // The answers are gone from the export, not merely hidden.
+  const csv = await page.request.get("/api/admin/export?format=csv");
+  expect(await csv.text()).not.toContain(participantCode!);
+});

@@ -16,7 +16,12 @@ import { transitions } from "@/lib/motion";
 export function ConsentScreen() {
   const { dispatch, state } = useInterview();
   const [agreed, setAgreed] = useState(state.consent?.accepted ?? false);
+  // Recorded separately from participation, and never inferred from it.
+  const [voiceAgreed, setVoiceAgreed] = useState(
+    state.consent?.recordingConsent ?? false
+  );
   const checkboxId = useId();
+  const voiceCheckboxId = useId();
 
   return (
     <div className="grid w-full justify-items-center gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:justify-items-stretch lg:gap-14">
@@ -73,6 +78,44 @@ export function ConsentScreen() {
           </Field>
         </FieldLabel>
 
+        <FieldLabel htmlFor={voiceCheckboxId}>
+          <Field orientation="horizontal">
+            <Checkbox
+              id={voiceCheckboxId}
+              checked={voiceAgreed}
+              onCheckedChange={setVoiceAgreed}
+            />
+            <span className="flex-1 text-sm">
+              {consentContent.voiceConsentLabel}
+            </span>
+
+            <AnimatePresence initial={false}>
+              {voiceAgreed && (
+                <motion.span
+                  key="voice-agreed"
+                  aria-hidden="true"
+                  initial={{ scale: 0.4, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.6, opacity: 0 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 520,
+                    damping: 26,
+                    mass: 0.6,
+                  }}
+                  className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--color-htw)]"
+                >
+                  <Check className="size-3 text-white" strokeWidth={3} />
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </Field>
+        </FieldLabel>
+
+        <p className="text-xs text-muted-foreground">
+          {consentContent.legalBasis}
+        </p>
+
         <NavigationControls
           onBack={() => dispatch({ type: "BACK" })}
           continueDisabled={!agreed}
@@ -80,6 +123,7 @@ export function ConsentScreen() {
             dispatch({
               type: "ACCEPT_CONSENT",
               consentVersion: consentContent.version,
+              recordingConsent: voiceAgreed,
             })
           }
         />

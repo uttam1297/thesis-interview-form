@@ -25,6 +25,7 @@ export function VoiceTextResponse({
   onChange,
   labelId,
   describedById,
+  speechConsented = false,
 }: ResponseComponentProps<VoiceCapableType>) {
   const text = value?.kind === "text" ? value.text : "";
   const adapter = useSpeechAdapter();
@@ -46,8 +47,14 @@ export function VoiceTextResponse({
   const isActive =
     voice.status === "listening" || voice.status === "requesting";
   // Once refused, offering the button again just fails silently.
+  // Speech-to-text is consented to separately on the consent screen.
+  // Declining it has to actually switch dictation off, or asking was
+  // theatre.
   const canDictate =
-    voice.isSupported && voice.status !== "denied" && voice.status !== "error";
+    speechConsented &&
+    voice.isSupported &&
+    voice.status !== "denied" &&
+    voice.status !== "error";
 
   return (
     <div className="flex flex-col gap-3">
@@ -71,7 +78,7 @@ export function VoiceTextResponse({
         </div>
       )}
 
-      {!voice.isSupported && (
+      {speechConsented && !voice.isSupported && (
         <p className="text-sm text-muted-foreground">
           Speaking your answer isn&apos;t supported in this browser — please
           type instead.

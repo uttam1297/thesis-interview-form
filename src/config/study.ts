@@ -10,8 +10,7 @@ export const study = {
   shortTitle: "From Data to Product Decisions",
   institution: "HTW Berlin — University of Applied Sciences",
   programme: "Master's thesis research",
-  /** Replace with the study team address before inviting participants. */
-  contactEmail: "research@example.edu",
+  contactEmail: "12uttamdarekar@gmail.com",
   logo: {
     src: "/images/htw-logo.png",
     alt: "HTW Berlin, University of Applied Sciences",

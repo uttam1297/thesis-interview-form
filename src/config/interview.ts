@@ -22,7 +22,7 @@ const SOME_AI_USE = {
 } as const;
 
 const rawConfig = {
-  version: "2.0.0",
+  version: "2.1.0",
   sections: [
     {
       id: "profile",
@@ -357,9 +357,14 @@ const rawConfig = {
       construct: "prioritisation",
       sectionId: "challenges",
       title: "Prioritisation factors",
+      // Reworded in 2.1.0 for clarity. The construct is unchanged: how
+      // competing options are weighed against each other. The earlier
+      // phrasing ("when options are prioritised") was passive and gave no
+      // instruction on how to answer.
       prompt:
-        "Rank these factors by how much weight they carry when options are prioritised.",
-      description: "Most influential at the top.",
+        "When your team decides what to work on next, how much weight does each of these carry?",
+      description:
+        "Use the arrows to put them in order. There is no right answer — order them as they actually work in your team.",
       required: true,
       responseType: "ranking",
       options: [

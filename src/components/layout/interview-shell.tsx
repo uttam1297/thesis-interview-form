@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 interface InterviewShellProps {
   /** Landing screens use the full width for a two-column layout. */
   wide?: boolean;
+  /** Optional artwork that fills the shell behind the active screen. */
+  background?: ReactNode;
   /** Optional progress row pinned to the top (omitted on welcome/consent/complete). */
   progress?: ReactNode;
   children: ReactNode;
@@ -23,12 +25,17 @@ export function InterviewShell({
   children,
   footer,
   fixedFooter,
+  background,
   wide = false,
 }: InterviewShellProps) {
   return (
     <div
-      className={cn("relative flex min-h-dvh flex-col", fixedFooter && "pb-24")}
+      className={cn(
+        "relative isolate flex min-h-dvh flex-col",
+        fixedFooter && "pb-24"
+      )}
     >
+      {background}
       {wide && (
         <div
           aria-hidden="true"
@@ -48,7 +55,7 @@ export function InterviewShell({
       )}
       <main
         id="interview-content"
-        className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6"
+        className="relative z-10 flex flex-1 items-center justify-center px-4 py-10 sm:px-6"
       >
         <div
           className={cn(

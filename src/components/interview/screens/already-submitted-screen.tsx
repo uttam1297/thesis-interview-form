@@ -33,14 +33,14 @@ export function AlreadySubmittedScreen() {
         </p>
       )}
       <p className="text-sm text-muted-foreground">
-        If you would like your responses withdrawn, contact me at{" "}
+        To withdraw your responses, email me your participant code at{" "}
         <a
           href={`mailto:${study.contactEmail}`}
           className="underline underline-offset-4 hover:text-foreground"
         >
           {study.contactEmail}
         </a>{" "}
-        with your reference.
+        . I delete them on request, no reason needed.
       </p>
     </div>
   );

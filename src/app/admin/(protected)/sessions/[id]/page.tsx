@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SessionNotes } from "@/app/admin/(protected)/sessions/[id]/session-notes";
+import { WithdrawSession } from "@/app/admin/(protected)/sessions/[id]/withdraw-session";
+import { RETENTION_MONTHS } from "@/features/consent/content";
 import { formatAnswer } from "@/features/interview/format-answer";
 import { getSessionDetail } from "@/features/admin/queries";
 
@@ -76,6 +78,14 @@ export default async function SessionDetailPage({
             value={new Date(session.lastActivityAt).toLocaleString()}
           />
           <Row
+            label={`Delete by (${RETENTION_MONTHS} months)`}
+            value={new Date(
+              new Date(session.startedAt).setMonth(
+                new Date(session.startedAt).getMonth() + RETENTION_MONTHS
+              )
+            ).toLocaleDateString()}
+          />
+          <Row
             label="Completed"
             value={
               session.completedAt
@@ -90,6 +100,15 @@ export default async function SessionDetailPage({
       </section>
 
       <SessionNotes sessionId={session.id} notes={session.researcherNotes} />
+
+      <WithdrawSession
+        sessionId={session.id}
+        participantCode={session.participantCode}
+        alreadyWithdrawn={
+          session.status === "withdrawn" ||
+          session.consent?.withdrawnAt !== null
+        }
+      />
 
       <section
         aria-labelledby="responses-heading"

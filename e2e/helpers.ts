@@ -43,7 +43,8 @@ export async function typeAnswer(page: Page, text: string) {
 export async function beginAndConsent(page: Page) {
   await page.goto("/interview");
   await page.getByRole("button", { name: "Begin the interview" }).click();
-  await page.getByRole("checkbox").click();
+  // Participation consent; speech-to-text is a separate, optional box.
+  await page.getByRole("checkbox", { name: /agree to take part/i }).click();
   await continueStep(page);
   await expect(page.getByRole("heading", { name: "About you" })).toBeVisible();
   await continueStep(page);

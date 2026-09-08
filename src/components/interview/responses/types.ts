@@ -18,4 +18,10 @@ export interface ResponseComponentProps<T extends ResponseType = ResponseType> {
   labelId: string;
   /** Id of the description element, if any, for aria-describedby. */
   describedById?: string;
+  /**
+   * Whether the participant consented to speech-to-text. Passed in rather
+   * than read from interview state, so response components stay
+   * presentational and testable on their own.
+   */
+  speechConsented?: boolean;
 }

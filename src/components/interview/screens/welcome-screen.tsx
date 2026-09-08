@@ -6,11 +6,12 @@ import { motion } from "motion/react";
 import { DecisionFlowGraphic } from "@/components/layout/decision-flow-graphic";
 import { Button } from "@/components/ui/button";
 import { study } from "@/config/study";
+import { ESTIMATED_MINUTES } from "@/features/consent/content";
 import { useInterview } from "@/features/interview/use-interview";
 import { transitions } from "@/lib/motion";
 
 const highlights = [
-  "About 25–30 minutes, and you can pause any time",
+  `About ${ESTIMATED_MINUTES}, and you can pause any time`,
   "Your responses are anonymized",
   "Answer by typing or speaking — whichever you prefer",
 ];

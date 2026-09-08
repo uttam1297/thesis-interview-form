@@ -62,7 +62,8 @@ export function CompleteScreen() {
               {state.participantRef}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Keep this if you may want your responses withdrawn later.
+              Keep this. Emailing me this code is how you withdraw your
+              responses later.
             </p>
           </motion.div>
         )}

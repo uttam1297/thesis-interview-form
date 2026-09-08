@@ -183,9 +183,21 @@ npm run build
   read through RLS policies.
 - Logs record error codes and session ids, never response content or tokens.
 - Research responses are not sent to any third-party AI provider.
-- Consent copy in `src/features/consent/content.ts` is placeholder wording. It
-  must be replaced with the university-approved text (retention period,
-  withdrawal procedure, supervisor contact) before real participants take part.
+- Consent copy lives in `src/features/consent/content.ts`, drafted around the
+  elements a GDPR/DSGVO research consent notice is expected to cover:
+  controller, data collected, purpose, legal basis (Art. 6(1)(a)), retention
+  and withdrawal. **It is drafted, not approved** — confirm the retention
+  period, legal basis and supervisor details with your examiner and HTW's
+  data protection office before inviting participants. The `version` string
+  is written to every consent record, so bump it whenever the wording
+  changes.
+- Speech-to-text is consented to separately from participation, and
+  declining it disables dictation rather than merely noting the preference.
+- Retention is `RETENTION_MONTHS` (currently 5). Each session's delete-by
+  date is shown on its admin page. Deletion is not automated — a withdrawal
+  request is honoured with the **Withdraw** action on the session page,
+  which permanently deletes that participant's responses and records the
+  withdrawal against their consent.
 - This implements technical privacy measures. It is not, on its own, a claim of
   GDPR compliance — that follows the university's ethics process.
 

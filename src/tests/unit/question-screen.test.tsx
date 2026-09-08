@@ -34,7 +34,9 @@ async function reachFirstQuestion(user: ReturnType<typeof userEvent.setup>) {
   await user.click(
     await screen.findByRole("button", { name: "Begin the interview" })
   );
-  await user.click(await screen.findByRole("checkbox"));
+  await user.click(
+    await screen.findByRole("checkbox", { name: /agree to take part/i })
+  );
   await user.click(await screen.findByRole("button", { name: "Continue" }));
   // Section intro.
   await user.click(await screen.findByRole("button", { name: "Continue" }));

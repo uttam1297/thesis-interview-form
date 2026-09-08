@@ -93,7 +93,7 @@ test("section transitions show position rather than an invented duration", async
   // Stop on the section intro rather than walking past it.
   await page.goto("/interview");
   await page.getByRole("button", { name: "Begin the interview" }).click();
-  await page.getByRole("checkbox").click();
+  await page.getByRole("checkbox", { name: /agree to take part/i }).click();
   await page.getByRole("button", { name: "Continue" }).first().click();
 
   await expect(page.getByRole("heading", { name: "About you" })).toBeVisible();

@@ -5,8 +5,14 @@ is to find confusing wording and friction while it is still cheap to fix.
 
 ## Before the pilot
 
-- [ ] Consent text in `src/features/consent/content.ts` replaced with the
-      university-approved wording (retention, withdrawal, supervisor contact).
+- [ ] Consent text in `src/features/consent/content.ts` reviewed and approved
+      by your examiner and HTW's data protection office. Bump `version` if the
+      wording changes.
+- [ ] Retention period (`RETENTION_MONTHS`, currently 5) confirmed as correct
+      for your ethics procedure.
+- [ ] Withdrawal tested once end to end: submit a session, then use the
+      Withdraw action on its admin page and confirm the responses leave the
+      export.
 - [ ] Contact address in `src/config/study.ts` is the one participants should
       actually use for questions and withdrawal requests.
 - [ ] Questionnaire published: `npm run questionnaire:publish`.

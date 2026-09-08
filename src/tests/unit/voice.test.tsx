@@ -47,7 +47,7 @@ describe("useVoiceInput", () => {
     expect(result.current.status).toBe("unsupported");
   });
 
-  it("walks idle → listening → idle and forwards final transcripts", () => {
+  it("walks idle → requesting → listening → idle and forwards final transcripts", () => {
     const adapter = createFakeAdapter();
     const onFinal = vi.fn();
     const { result } = renderHook(() =>
@@ -55,6 +55,10 @@ describe("useVoiceInput", () => {
     );
 
     act(() => result.current.start());
+    // Permission may still be pending: nothing is being recorded yet.
+    expect(result.current.status).toBe("requesting");
+
+    act(() => adapter.handlers?.onStart?.());
     expect(result.current.status).toBe("listening");
 
     act(() => adapter.handlers?.onTranscript("hello wor", false));
@@ -68,7 +72,7 @@ describe("useVoiceInput", () => {
     expect(result.current.status).toBe("idle");
   });
 
-  it("surfaces permission errors", () => {
+  it("moves to a terminal denied state when permission is refused", () => {
     const adapter = createFakeAdapter();
     const { result } = renderHook(() =>
       useVoiceInput({ adapter, onFinalTranscript: () => {} })
@@ -81,7 +85,9 @@ describe("useVoiceInput", () => {
       })
     );
     act(() => adapter.handlers?.onEnd());
-    expect(result.current.status).toBe("error");
+    // Denied is terminal: browsers remember refusal, so the control stops
+    // offering to try again.
+    expect(result.current.status).toBe("denied");
     expect(result.current.error?.code).toBe("permission-denied");
   });
 });
@@ -105,7 +111,7 @@ describe("VoiceTextResponse", () => {
       screen.queryByRole("button", { name: /speak answer/i })
     ).not.toBeInTheDocument();
     expect(
-      screen.getByText(/isn't available in this browser/i)
+      screen.getByText(/isn't supported in this browser/i)
     ).toBeInTheDocument();
 
     await user.type(screen.getByRole("textbox"), "t");
@@ -131,8 +137,9 @@ describe("VoiceTextResponse", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /speak answer/i }));
+    act(() => adapter.handlers?.onStart?.());
     expect(
-      screen.getByRole("button", { name: /listening/i })
+      screen.getByRole("button", { name: /stop recording/i })
     ).toBeInTheDocument();
 
     act(() => adapter.handlers?.onTranscript("and dictated", true));

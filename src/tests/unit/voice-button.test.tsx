@@ -32,7 +32,7 @@ describe("VoiceButton", () => {
       />
     );
 
-    const button = screen.getByRole("button", { name: /listening/i });
+    const button = screen.getByRole("button", { name: /stop recording/i });
     expect(button).toHaveTextContent("00:34");
 
     await user.click(button);
@@ -58,7 +58,7 @@ describe("VoiceButton", () => {
     // The reduced-motion path still renders the listening button; it simply
     // does not animate scale/opacity through keyframes.
     expect(
-      screen.getByRole("button", { name: /listening/i })
+      screen.getByRole("button", { name: /stop recording/i })
     ).toBeInTheDocument();
   });
 });

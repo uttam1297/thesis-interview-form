@@ -15,7 +15,7 @@ interface SectionIntroScreenProps {
 
 export function SectionIntroScreen({ step }: SectionIntroScreenProps) {
   const { dispatch } = useInterview();
-  const { section, completedSection, remainingMinutes } = step;
+  const { section, completedSection, sectionNumber, sectionCount } = step;
 
   return (
     <motion.div
@@ -42,11 +42,13 @@ export function SectionIntroScreen({ step }: SectionIntroScreenProps) {
         )}
       </div>
 
-      {remainingMinutes !== null && (
-        <p className="text-sm text-muted-foreground">
-          About {remainingMinutes} minutes remaining
-        </p>
-      )}
+      {/*
+        Position rather than a predicted duration: no pilot timings exist
+        yet to ground a minutes estimate, and a wrong one erodes trust.
+      */}
+      <p className="text-sm text-muted-foreground">
+        Section {sectionNumber} of {sectionCount}
+      </p>
 
       <NavigationControls
         onBack={completedSection ? () => dispatch({ type: "BACK" }) : undefined}

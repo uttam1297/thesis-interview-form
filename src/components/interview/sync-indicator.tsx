@@ -16,7 +16,10 @@ export function SyncIndicator() {
 
   if (syncStatus === "saving") {
     return (
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <p
+        aria-live="polite"
+        className="flex items-center gap-1.5 text-xs text-muted-foreground"
+      >
         <Loader2 className="size-3 animate-spin" aria-hidden="true" />
         Saving…
       </p>
@@ -25,7 +28,10 @@ export function SyncIndicator() {
 
   if (syncStatus === "saved") {
     return (
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <p
+        aria-live="polite"
+        className="flex items-center gap-1.5 text-xs text-muted-foreground"
+      >
         <Check className="size-3" aria-hidden="true" />
         Saved
       </p>

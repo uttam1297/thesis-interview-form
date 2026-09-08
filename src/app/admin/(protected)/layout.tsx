@@ -28,6 +28,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             <Link href="/admin/live/new" className="hover:text-foreground">
               Live interview
             </Link>
+            <Link href="/admin/pilot" className="hover:text-foreground">
+              Pilot
+            </Link>
           </nav>
           <div className="ml-auto flex items-center gap-3">
             <span className="text-xs text-muted-foreground">

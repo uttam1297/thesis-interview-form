@@ -18,7 +18,9 @@ async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceKey) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set");
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set"
+    );
   }
   if (!url.includes("127.0.0.1") && !url.includes("localhost")) {
     throw new Error(
@@ -47,9 +49,14 @@ async function main() {
 
   const { error: profileError } = await supabase
     .from("researcher_profiles")
-    .upsert({ user_id: userId, display_name: "Researcher" }, { onConflict: "user_id" });
+    .upsert(
+      { user_id: userId, display_name: "Researcher" },
+      { onConflict: "user_id" }
+    );
   if (profileError) {
-    throw new Error(`Could not grant researcher access: ${profileError.message}`);
+    throw new Error(
+      `Could not grant researcher access: ${profileError.message}`
+    );
   }
 
   console.log(`Researcher ready: ${EMAIL}`);

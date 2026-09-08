@@ -1,13 +1,13 @@
 "use client";
 
-import { Mic, Square } from "lucide-react";
+import { Loader2, Mic, Square } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
 import { transitions } from "@/lib/motion";
 
 interface VoiceButtonProps {
-  status: "idle" | "listening";
+  status: "idle" | "requesting" | "listening";
   elapsedSeconds?: number;
   onStart: () => void;
   onStop: () => void;
@@ -25,9 +25,10 @@ function formatElapsed(totalSeconds: number): string {
 }
 
 /**
- * Presentational voice control. Holds no recognition/transcription logic —
- * it only reports start/stop intent. The caller owns the actual capture
- * (Phase 2 voice adapter) and swaps in an editable text field once done.
+ * Presentational voice control. Holds no recognition logic — it reports
+ * start/stop intent and shows the state it is given. "Requesting" is
+ * distinct from "listening" so the control never implies it is recording
+ * while the browser is still asking for permission.
  */
 export function VoiceButton({
   status,
@@ -38,16 +39,18 @@ export function VoiceButton({
 }: VoiceButtonProps) {
   const prefersReducedMotion = useReducedMotion();
   const isListening = status === "listening";
+  const isRequesting = status === "requesting";
 
   return (
     <div className="flex flex-col items-start gap-1.5">
       <Button
         type="button"
         variant="outline"
+        size="lg"
         onClick={isListening ? onStop : onStart}
-        disabled={disabled}
+        disabled={disabled || isRequesting}
         aria-pressed={isListening}
-        className="relative"
+        className="relative min-h-11"
       >
         <span className="relative flex size-4 items-center justify-center">
           {isListening && (
@@ -65,15 +68,19 @@ export function VoiceButton({
               }
             />
           )}
-          {isListening ? (
+          {isRequesting ? (
+            <Loader2 className="relative size-4 animate-spin" />
+          ) : isListening ? (
             <Square className="relative size-3.5 fill-current text-destructive" />
           ) : (
             <Mic className="relative size-4" />
           )}
         </span>
-        {isListening ? (
+        {isRequesting ? (
+          "Waiting for microphone…"
+        ) : isListening ? (
           <>
-            Listening<span aria-hidden="true">…</span>{" "}
+            Stop recording{" "}
             <span className="tabular-nums">
               {formatElapsed(elapsedSeconds)}
             </span>
@@ -82,8 +89,14 @@ export function VoiceButton({
           "Speak answer"
         )}
       </Button>
-      <span role="status" className="sr-only">
-        {isListening ? "Listening for your answer" : ""}
+
+      {/* Announced to screen readers as the state changes. */}
+      <span role="status" aria-live="polite" className="sr-only">
+        {isRequesting
+          ? "Waiting for microphone permission"
+          : isListening
+            ? "Listening. Your words appear in the answer box."
+            : ""}
       </span>
     </div>
   );

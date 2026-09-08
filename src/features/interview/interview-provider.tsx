@@ -131,7 +131,11 @@ export function InterviewProvider({
     let cancelled = false;
     persistence.drafts.load(config.version).then((draft) => {
       if (cancelled) return;
-      if (draft && draft.status === "in_progress") {
+      if (draft?.status === "submitted") {
+        // A finished session: show the closing screen rather than sending
+        // the participant back to the welcome page.
+        rawDispatch({ type: "HYDRATE", state: draft });
+      } else if (draft && draft.status === "in_progress") {
         if (autoResume) rawDispatch({ type: "HYDRATE", state: draft });
         else setPendingDraft(draft);
       }

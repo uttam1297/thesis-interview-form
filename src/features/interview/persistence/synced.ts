@@ -97,6 +97,13 @@ export class SyncedPersistence
         this.setStatus("offline");
         return localDraft;
       }
+      if (error instanceof ApiError && error.code === "already_completed") {
+        // Nothing more to do with this session; the UI closes the loop.
+        resumeTokenStore.clear();
+        this.resumeToken = null;
+        await this.local.clear();
+        return null;
+      }
       // Invalid, expired or unknown token. Keep any local answers: the next
       // save creates a fresh session and uploads them.
       resumeTokenStore.clear();

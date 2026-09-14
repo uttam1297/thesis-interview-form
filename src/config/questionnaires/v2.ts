@@ -1,0 +1,308 @@
+import { parseInterviewConfig } from "@/lib/validation/interview-config";
+import type { InterviewConfig } from "@/types/interview";
+
+const rawV2Config = {
+  version: "v2",
+  experience: "journey",
+  sections: [
+    {
+      id: "v2_profile",
+      label: "About you",
+      intro: "A little context about your work and decision-making role.",
+      estimatedMinutes: 2,
+    },
+    { id: "v2_real_decision", label: "A real decision", estimatedMinutes: 2 },
+    { id: "v2_inputs", label: "What informed it", estimatedMinutes: 2 },
+    {
+      id: "v2_difficulty",
+      label: "What made it difficult",
+      estimatedMinutes: 2,
+    },
+    { id: "v2_before_acting", label: "Before acting", estimatedMinutes: 2 },
+    { id: "v2_outcome", label: "What happened", estimatedMinutes: 2 },
+    { id: "v2_looking_back", label: "Looking back", estimatedMinutes: 2 },
+  ],
+  questions: [
+    {
+      id: "v2_profile_role",
+      construct: "participant_profile",
+      constructs: ["participant_profile", "role"],
+      sectionId: "v2_profile",
+      title: "Role",
+      prompt: "Which best describes your current role?",
+      required: true,
+      responseType: "single_select",
+      options: [
+        { value: "product", label: "Product / Product Owner" },
+        { value: "project_delivery", label: "Project / Program / Delivery" },
+        { value: "engineering", label: "Engineering / Technical" },
+        { value: "data_ai", label: "Data / Analytics / AI" },
+        { value: "design_research", label: "Design / UX / Research" },
+        {
+          value: "operations_business_growth",
+          label: "Operations / Business / Growth",
+        },
+        { value: "leadership", label: "Leadership / Management" },
+      ],
+      allowOther: true,
+    },
+    {
+      id: "v2_profile_experience",
+      construct: "participant_profile",
+      constructs: ["participant_profile", "professional_experience"],
+      sectionId: "v2_profile",
+      title: "Experience",
+      prompt: "How many years of relevant professional experience do you have?",
+      required: true,
+      responseType: "single_select",
+      options: [
+        { value: "0-2", label: "Less than 2 years" },
+        { value: "2-5", label: "2–5 years" },
+        { value: "6-10", label: "6–10 years" },
+        { value: "10+", label: "More than 10 years" },
+      ],
+    },
+    {
+      id: "v2_profile_industry",
+      construct: "participant_profile",
+      constructs: ["participant_profile", "industry"],
+      sectionId: "v2_profile",
+      title: "Industry",
+      prompt: "Which industry or sector do you mainly work in?",
+      required: true,
+      responseType: "single_select",
+      options: [
+        { value: "software_saas", label: "Software / SaaS" },
+        { value: "ecommerce_marketplace", label: "E-commerce or marketplace" },
+        { value: "fintech_banking", label: "Fintech or banking" },
+        { value: "media_entertainment", label: "Media or entertainment" },
+        { value: "healthcare", label: "Healthcare" },
+        { value: "energy_industrial", label: "Energy or industrial" },
+        { value: "consulting_agency", label: "Consulting or agency" },
+      ],
+      allowOther: true,
+    },
+    {
+      id: "v2_profile_decision_involvement",
+      construct: "participant_profile",
+      constructs: ["participant_profile", "decision_involvement"],
+      sectionId: "v2_profile",
+      title: "Decision involvement",
+      prompt:
+        "How are you typically involved in important decisions affecting a digital product, service, process, or technical solution?",
+      required: true,
+      responseType: "single_select",
+      options: [
+        { value: "own", label: "I make or own the decision" },
+        { value: "recommend", label: "I recommend options" },
+        {
+          value: "provide_input",
+          label: "I provide technical, data, research, or domain input",
+        },
+        {
+          value: "implement",
+          label: "I mainly implement decisions made by others",
+        },
+      ],
+      allowOther: true,
+    },
+    {
+      id: "v2_q1_decision_context",
+      construct: "decision_context",
+      constructs: ["decision_context", "decision_process"],
+      sectionId: "v2_real_decision",
+      title: "Recent decision",
+      transition: "Let's start with something real.",
+      prompt:
+        "Think of a recent work decision that had an important effect on a digital product, service, process, or technical solution. What was happening, and what decision needed to be made?",
+      description: "A real example is most useful. A few sentences are enough.",
+      required: true,
+      responseType: "guided_open",
+      nonAnswerOptions: [
+        {
+          value: "cant_think_of_example",
+          label: "I can't think of a relevant example right now.",
+        },
+      ],
+    },
+    {
+      id: "v2_q2_decision_inputs",
+      construct: "decision_inputs",
+      constructs: [
+        "evidence_use",
+        "human_judgement",
+        "ai_use",
+        "decision_inputs",
+      ],
+      sectionId: "v2_inputs",
+      title: "Decision inputs",
+      transition: "Staying with that example...",
+      prompt: "What did you rely on when deciding what to do?",
+      description: "Choose all that apply.",
+      required: true,
+      responseType: "multi_select_with_elaboration",
+      options: [
+        { value: "data_analytics", label: "Data or analytics" },
+        {
+          value: "customer_user_information",
+          label: "Customer or user information",
+        },
+        {
+          value: "stakeholder_leadership",
+          label: "Stakeholder or leadership input",
+        },
+        {
+          value: "professional_judgement",
+          label: "Professional experience or judgement",
+        },
+        { value: "documentation_research", label: "Documentation or research" },
+        { value: "ai_based_tools", label: "AI-based tools" },
+        { value: "experiments_testing", label: "Experiments or testing" },
+        { value: "technical_constraints", label: "Technical constraints" },
+      ],
+      allowOther: true,
+      elaborationPrompt: "Which of these mattered most, and why?",
+      elaborationRequired: true,
+    },
+    {
+      id: "v2_q3_difficulty",
+      construct: "decision_difficulty",
+      constructs: [
+        "decision_difficulty",
+        "uncertainty",
+        "tradeoffs",
+        "prioritisation",
+        "stakeholder_conflict",
+      ],
+      sectionId: "v2_difficulty",
+      title: "Difficulty or uncertainty",
+      transition: "Now think about what made the decision difficult.",
+      prompt: "What, if anything, made that decision difficult or uncertain?",
+      description: "A few sentences are enough.",
+      required: true,
+      responseType: "guided_open",
+      nonAnswerOptions: [
+        {
+          value: "straightforward",
+          label: "Nothing — it was fairly straightforward",
+        },
+        { value: "not_my_role", label: "Not part of my role" },
+        { value: "dont_know", label: "I don't know" },
+        { value: "prefer_not", label: "Prefer not to answer" },
+      ],
+      optionalProbe: {
+        prompt: "How did you eventually choose between the available options?",
+        requireSubstantiveAnswer: true,
+      },
+    },
+    {
+      id: "v2_q4_validation_governance",
+      construct: "validation_governance",
+      constructs: [
+        "data_quality",
+        "verification",
+        "ai_trust",
+        "human_oversight",
+        "governance",
+        "security",
+        "privacy",
+        "compliance",
+        "accountability",
+        "risk",
+      ],
+      sectionId: "v2_before_acting",
+      title: "Checks before acting",
+      transition: "Before you acted...",
+      prompt:
+        "Before acting on the decision, what did you check or consider to make sure it was reliable, acceptable, and safe enough to proceed?",
+      description:
+        "Examples might include data quality, another person's review, approvals, security, privacy, policy, compliance, or technical risk.",
+      required: true,
+      responseType: "guided_open",
+      nonAnswerOptions: [
+        { value: "no_special_checks", label: "No special checks were needed" },
+        { value: "not_applicable_role", label: "Not applicable to my role" },
+        { value: "dont_know", label: "I don't know" },
+        { value: "prefer_not", label: "Prefer not to answer" },
+      ],
+      optionalProbe: {
+        prompt:
+          "How did you decide whether the AI output was reliable enough to use?",
+        showIf: [
+          {
+            questionId: "v2_q2_decision_inputs",
+            operator: "includes",
+            value: "ai_based_tools",
+          },
+        ],
+      },
+    },
+    {
+      id: "v2_q5_outcome_learning",
+      construct: "outcome_measurement",
+      constructs: ["outcome_measurement", "feedback", "learning"],
+      sectionId: "v2_outcome",
+      title: "Outcome and learning",
+      transition: "And what happened afterwards?",
+      prompt:
+        "What happened after the decision was implemented, and how did you know whether it worked?",
+      description: "A few sentences are enough.",
+      required: true,
+      responseType: "guided_open",
+      nonAnswerOptions: [
+        {
+          value: "not_formally_measured",
+          label: "The outcome was not formally measured",
+        },
+        {
+          value: "not_involved_after",
+          label: "I was not involved after implementation",
+        },
+        { value: "not_applicable", label: "Not applicable" },
+        { value: "prefer_not", label: "Prefer not to answer" },
+      ],
+      optionalProbe: {
+        prompt: "Did what you learned change anything you did afterwards?",
+        requireSubstantiveAnswer: true,
+      },
+    },
+    {
+      id: "v2_q6_improvement",
+      construct: "design_requirements",
+      constructs: ["design_requirements", "process_improvement", "unmet_needs"],
+      sectionId: "v2_looking_back",
+      title: "One improvement",
+      transition: "Finally, looking back...",
+      prompt:
+        "Looking back at that decision, what one thing would have made the process easier, faster, safer, or more reliable?",
+      description: "A few sentences are enough.",
+      required: true,
+      responseType: "guided_open",
+      nonAnswerOptions: [
+        { value: "nothing_needed", label: "Nothing in particular" },
+        { value: "not_applicable", label: "Not applicable" },
+        { value: "dont_know", label: "I don't know" },
+        { value: "prefer_not", label: "Prefer not to answer" },
+      ],
+      optionalProbe: {
+        prompt: "Was there anything you wish you had available at the time?",
+        requireSubstantiveAnswer: true,
+      },
+    },
+    {
+      id: "v2_q7_optional_closing",
+      construct: "closing",
+      constructs: ["closing"],
+      sectionId: "v2_looking_back",
+      title: "Anything else",
+      prompt:
+        "Is there anything important about how data, AI, or human judgement affects decisions in your work that we haven't discussed?",
+      description: "Optional — add anything we have not covered.",
+      required: false,
+      responseType: "optional_elaboration",
+    },
+  ],
+} satisfies InterviewConfig;
+
+export const v2InterviewConfig: InterviewConfig =
+  parseInterviewConfig(rawV2Config);

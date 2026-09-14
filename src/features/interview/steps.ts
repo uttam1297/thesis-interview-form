@@ -58,14 +58,16 @@ export function buildSteps(
   );
 
   sectionsWithQuestions.forEach((section, index) => {
-    steps.push({
-      kind: "section-intro",
-      id: stepIdForSectionIntro(section.id),
-      section,
-      completedSection: index === 0 ? null : sectionsWithQuestions[index - 1],
-      sectionNumber: index + 1,
-      sectionCount: sectionsWithQuestions.length,
-    });
+    if (config.experience !== "journey") {
+      steps.push({
+        kind: "section-intro",
+        id: stepIdForSectionIntro(section.id),
+        section,
+        completedSection: index === 0 ? null : sectionsWithQuestions[index - 1],
+        sectionNumber: index + 1,
+        sectionCount: sectionsWithQuestions.length,
+      });
+    }
 
     visibleQuestions
       .filter((q) => q.sectionId === section.id)

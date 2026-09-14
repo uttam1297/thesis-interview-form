@@ -2,22 +2,34 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { errorResponse } from "@/app/api/sessions/route";
-import { getSession, saveResponses } from "@/features/sessions/session-service";
+import { getSession, saveResponses } from "@/features/sessions/session-router";
 
 const responseValueSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("single"),
     value: z.string(),
-    other: z.string().optional(),
+    other: z.string().max(20000).optional(),
   }),
   z.object({
     kind: z.literal("multi"),
     values: z.array(z.string()),
-    other: z.string().optional(),
+    other: z.string().max(20000).optional(),
   }),
   z.object({ kind: z.literal("scale"), value: z.number() }),
   z.object({ kind: z.literal("ranking"), order: z.array(z.string()) }),
   z.object({ kind: z.literal("text"), text: z.string().max(20000) }),
+  z.object({
+    kind: z.literal("guided_text"),
+    text: z.string().max(20000),
+    nonAnswer: z.string().optional(),
+    optionalElaboration: z.string().max(20000).optional(),
+  }),
+  z.object({
+    kind: z.literal("multi_elaboration"),
+    values: z.array(z.string()),
+    other: z.string().max(20000).optional(),
+    optionalElaboration: z.string().max(20000).optional(),
+  }),
 ]);
 
 const saveSchema = z.object({

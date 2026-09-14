@@ -1,6 +1,7 @@
 import type {
   QuestionOfType,
   ResponseMethod,
+  ResponseRecord,
   ResponseType,
   ResponseValue,
 } from "@/types/interview";
@@ -24,4 +25,6 @@ export interface ResponseComponentProps<T extends ResponseType = ResponseType> {
    * presentational and testable on their own.
    */
   speechConsented?: boolean;
+  /** Other answers are read-only context for conditional probes. */
+  responses?: Record<string, ResponseRecord>;
 }

@@ -3,8 +3,12 @@ import { z } from "zod";
 
 import { getResearcher } from "@/features/admin/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
-const notesSchema = z.object({ notes: z.string().max(20000) });
+const notesSchema = z.object({
+  notes: z.string().max(20000),
+  source: z.enum(["v1", "v2"]).default("v1"),
+});
 
 export async function PATCH(
   request: Request,
@@ -22,9 +26,12 @@ export async function PATCH(
 
   const { id } = await params;
   // Runs as the researcher, so the RLS update policy still applies.
-  const supabase = await createServerSupabaseClient();
+  const supabase =
+    parsed.data.source === "v2"
+      ? createAdminClient()
+      : await createServerSupabaseClient();
   const { error } = await supabase
-    .from("sessions")
+    .from(parsed.data.source === "v2" ? "interview_v2_sessions" : "sessions")
     .update({ researcher_notes: parsed.data.notes })
     .eq("id", id);
 

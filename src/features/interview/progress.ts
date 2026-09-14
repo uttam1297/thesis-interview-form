@@ -18,7 +18,8 @@ export interface Progress {
  */
 export function calculateProgress(
   steps: Step[],
-  currentStepId: string
+  currentStepId: string,
+  experience: "standard" | "journey" = "standard"
 ): Progress {
   const questions = visibleQuestionSteps(steps);
   const questionCount = questions.length;
@@ -37,6 +38,22 @@ export function calculateProgress(
   }
   if (currentStep.kind === "review" || currentStep.kind === "complete") {
     return { percent: 100, questionIndex: questionCount, questionCount };
+  }
+
+  if (experience === "journey" && currentStep.kind === "question") {
+    const sectionIds = [...new Set(questions.map((step) => step.section.id))];
+    const sectionIndex = Math.max(
+      sectionIds.indexOf(currentStep.section.id),
+      0
+    );
+    const denominator = Math.max(sectionIds.length - 1, 1);
+    return {
+      percent: Math.round((sectionIndex / denominator) * 100),
+      questionIndex: questions.findIndex(
+        (step) => step.question.id === currentStep.question.id
+      ),
+      questionCount,
+    };
   }
 
   // Number of question steps strictly before the current step.

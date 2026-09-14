@@ -31,6 +31,15 @@ export function formatAnswer(
       return value.values
         .map((v) => optionLabel(question, v, value.other))
         .join(", ");
+    case "multi_elaboration": {
+      const selected = value.values
+        .map((v) => optionLabel(question, v, value.other))
+        .join(", ");
+      const elaboration = value.optionalElaboration?.trim();
+      return elaboration
+        ? `${selected}\nMost important: ${elaboration}`
+        : selected;
+    }
     case "scale": {
       const max =
         question.responseType === "likert_scale" ? question.max : undefined;
@@ -42,5 +51,16 @@ export function formatAnswer(
         .join(" · ");
     case "text":
       return value.text.trim() || "Not answered";
+    case "guided_text": {
+      const main = value.nonAnswer
+        ? question.responseType === "guided_open"
+          ? (question.nonAnswerOptions?.find(
+              (option) => option.value === value.nonAnswer
+            )?.label ?? value.nonAnswer)
+          : value.nonAnswer
+        : value.text.trim() || "Not answered";
+      const elaboration = value.optionalElaboration?.trim();
+      return elaboration ? `${main}\nFollow-up: ${elaboration}` : main;
+    }
   }
 }

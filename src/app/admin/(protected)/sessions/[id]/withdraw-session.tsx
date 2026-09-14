@@ -6,11 +6,13 @@ import { useState } from "react";
 import { StatusMessage } from "@/components/feedback/status-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { StorageGeneration } from "@/features/admin/queries";
 
 interface WithdrawSessionProps {
   sessionId: string;
   participantCode: string;
   alreadyWithdrawn: boolean;
+  storageGeneration: StorageGeneration;
 }
 
 /**
@@ -24,6 +26,7 @@ export function WithdrawSession({
   sessionId,
   participantCode,
   alreadyWithdrawn,
+  storageGeneration,
 }: WithdrawSessionProps) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
@@ -91,7 +94,10 @@ export function WithdrawSession({
                   {
                     method: "POST",
                     headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ note: note || undefined }),
+                    body: JSON.stringify({
+                      note: note || undefined,
+                      source: storageGeneration,
+                    }),
                   }
                 );
                 if (!response.ok) {

@@ -6,7 +6,7 @@ test("Flow C: a temporary save failure keeps the answer and recovers on retry", 
   page,
 }) => {
   await beginAndConsent(page);
-  await chooseAndContinue(page, "Product Manager");
+  await chooseAndContinue(page, "Product / Product Owner");
   await expect(page.getByText("Saved")).toBeVisible();
 
   // Break the connection to the save endpoint.
@@ -38,7 +38,7 @@ test("Flow C: answers typed while offline survive a reload", async ({
   page,
 }) => {
   await beginAndConsent(page);
-  await chooseAndContinue(page, "Product Manager");
+  await chooseAndContinue(page, "Product / Product Owner");
   await expect(page.getByText("Saved")).toBeVisible();
 
   await page.route("**/api/sessions/current", async (route) => {

@@ -5,10 +5,12 @@ import { useState } from "react";
 import { StatusMessage } from "@/components/feedback/status-message";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import type { StorageGeneration } from "@/features/admin/queries";
 
 interface SessionNotesProps {
   sessionId: string;
   notes: string | null;
+  storageGeneration: StorageGeneration;
 }
 
 /**
@@ -16,7 +18,11 @@ interface SessionNotesProps {
  * response, so it is stored on the session rather than mixed into the
  * research answers.
  */
-export function SessionNotes({ sessionId, notes }: SessionNotesProps) {
+export function SessionNotes({
+  sessionId,
+  notes,
+  storageGeneration,
+}: SessionNotesProps) {
   const [value, setValue] = useState(notes ?? "");
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">(
     "idle"
@@ -48,7 +54,10 @@ export function SessionNotes({ sessionId, notes }: SessionNotesProps) {
               {
                 method: "PATCH",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ notes: value }),
+                body: JSON.stringify({
+                  notes: value,
+                  source: storageGeneration,
+                }),
               }
             );
             setState(response.ok ? "saved" : "error");

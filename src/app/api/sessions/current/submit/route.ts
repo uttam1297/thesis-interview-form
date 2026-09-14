@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { errorResponse } from "@/app/api/sessions/route";
-import { submitSession } from "@/features/sessions/session-service";
+import { submitSession } from "@/features/sessions/session-router";
 
 export async function POST(request: Request) {
   try {

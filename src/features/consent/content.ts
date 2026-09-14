@@ -23,6 +23,14 @@
  */
 export const ESTIMATED_MINUTES = "20–30 minutes";
 
+export function estimatedMinutesFor(config: {
+  experience?: "standard" | "journey";
+}): string {
+  return config.experience === "journey"
+    ? "about 15 minutes"
+    : ESTIMATED_MINUTES;
+}
+
 /** Months after which collected responses are deleted. */
 export const RETENTION_MONTHS = 5;
 

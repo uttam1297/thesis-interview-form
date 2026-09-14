@@ -2,7 +2,7 @@
  * Research questionnaire configuration types.
  *
  * These describe the *shape* of the instrument. Wording, order, options and
- * branching all live in config data (src/config/interview.ts); components
+ * branching all live in config data (src/config/questions.json); components
  * only ever receive a question object and render it.
  */
 
@@ -33,6 +33,15 @@ export interface ResearchMetadata {
   probes?: string[];
 }
 
+export interface OptionalProbe {
+  /** Participant-facing follow-up kept on the same logical screen/response. */
+  prompt: string;
+  /** Optional condition on an earlier answer, for example whether AI was used. */
+  showIf?: Condition[];
+  /** Hide until the main open response contains a substantive answer. */
+  requireSubstantiveAnswer?: boolean;
+}
+
 export interface SelectionValidation {
   minSelections?: number;
   maxSelections?: number;
@@ -52,6 +61,8 @@ interface QuestionBase {
   title: string;
   /** The question shown to the participant. */
   prompt: string;
+  /** Conversational lead-in shown above the prompt. */
+  transition?: string;
   /** Optional supporting text under the prompt. */
   description?: string;
   /**
@@ -61,6 +72,8 @@ interface QuestionBase {
    */
   aside?: string;
   required: boolean;
+  /** Full analytical construct map. Never rendered to participants. */
+  constructs?: string[];
   /** Question is shown only when every condition holds. */
   showIf?: Condition[];
   researchMetadata?: ResearchMetadata;
@@ -116,6 +129,25 @@ export interface OptionalElaborationQuestion extends QuestionBase {
   validation?: TextValidation;
 }
 
+/** Open response with explicit, legitimate non-answer states and an optional probe. */
+export interface GuidedOpenQuestion extends QuestionBase {
+  responseType: "guided_open";
+  nonAnswerOptions?: QuestionOption[];
+  optionalProbe?: OptionalProbe;
+  validation?: TextValidation;
+}
+
+/** Multi-select plus optional explanation, kept on one logical screen. */
+export interface MultiSelectWithElaborationQuestion extends QuestionBase {
+  responseType: "multi_select_with_elaboration";
+  options: QuestionOption[];
+  allowOther?: boolean;
+  elaborationPrompt: string;
+  /** Require a meaningful explanation in addition to the selected inputs. */
+  elaborationRequired?: boolean;
+  validation?: SelectionValidation;
+}
+
 export type InterviewQuestion =
   | SingleSelectQuestion
   | MultiSelectQuestion
@@ -124,7 +156,9 @@ export type InterviewQuestion =
   | ShortTextQuestion
   | LongTextQuestion
   | VoiceOrTextQuestion
-  | OptionalElaborationQuestion;
+  | OptionalElaborationQuestion
+  | GuidedOpenQuestion
+  | MultiSelectWithElaborationQuestion;
 
 export type ResponseType = InterviewQuestion["responseType"];
 
@@ -145,6 +179,8 @@ export interface InterviewSection {
 export interface InterviewConfig {
   /** Bump when questions change; drafts from another version are discarded. */
   version: string;
+  /** Journey mode removes numbered-workload cues and section-intro screens. */
+  experience?: "standard" | "journey";
   sections: InterviewSection[];
   questions: InterviewQuestion[];
 }
@@ -156,7 +192,19 @@ export type ResponseValue =
   | { kind: "multi"; values: string[]; other?: string }
   | { kind: "scale"; value: number }
   | { kind: "ranking"; order: string[] }
-  | { kind: "text"; text: string };
+  | { kind: "text"; text: string }
+  | {
+      kind: "guided_text";
+      text: string;
+      nonAnswer?: string;
+      optionalElaboration?: string;
+    }
+  | {
+      kind: "multi_elaboration";
+      values: string[];
+      other?: string;
+      optionalElaboration?: string;
+    };
 
 /**
  * How an answer was produced. "researcher" marks data entered during a live

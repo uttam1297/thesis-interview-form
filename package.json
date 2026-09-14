@@ -13,12 +13,14 @@
     "test:e2e": "playwright test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "questionnaire:publish": "tsx --env-file=.env.local scripts/publish-questionnaire.ts",
+    "questionnaire:publish": "tsx --env-file=.env.local scripts/publish-questionnaire-v2.ts",
+    "questionnaire:publish:v1": "tsx --env-file=.env.local scripts/publish-questionnaire.ts",
     "db:types": "supabase gen types typescript --local > src/types/database.ts",
     "db:reset": "supabase db reset",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "db:seed-researcher": "tsx --env-file=.env.local scripts/seed-researcher.ts",
-    "db:setup": "npm run db:seed-researcher && npm run questionnaire:publish"
+    "db:setup": "npm run db:seed-researcher && npm run questionnaire:publish:v1 && npm run questionnaire:publish",
+    "questionnaire:import": "tsx scripts/import-questionnaire.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

@@ -8,6 +8,7 @@ export type SessionErrorCode =
   | "expired"
   | "already_completed"
   | "version_mismatch"
+  | "invalid_response"
   | "not_found"
   | "unavailable";
 
@@ -26,6 +27,7 @@ export const sessionErrorStatus: Record<SessionErrorCode, number> = {
   expired: 410,
   already_completed: 409,
   version_mismatch: 409,
+  invalid_response: 422,
   not_found: 404,
   unavailable: 503,
 };
@@ -37,6 +39,8 @@ export const sessionErrorMessages: Record<SessionErrorCode, string> = {
   already_completed: "This interview has already been submitted. Thank you.",
   version_mismatch:
     "The questionnaire has been updated since this session started, so it cannot be continued.",
+  invalid_response:
+    "One answer is incomplete or invalid. Review it and try again.",
   not_found: "We could not find this session.",
   unavailable:
     "We could not reach the server. Your answers are saved on this device.",

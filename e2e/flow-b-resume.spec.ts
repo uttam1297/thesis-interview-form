@@ -6,7 +6,7 @@ test("Flow B: a participant leaves and resumes in the same browser", async ({
   page,
 }) => {
   await beginAndConsent(page);
-  await chooseAndContinue(page, "UX Researcher");
+  await chooseAndContinue(page, "Design / UX / Research");
   await chooseAndContinue(page, "2–5 years");
   await expect(
     page.getByRole("heading", { name: /which industry/i })
@@ -31,7 +31,7 @@ test("Flow B: a resume link continues the session in a different browser", async
   browser,
 }) => {
   await beginAndConsent(page);
-  await chooseAndContinue(page, "Product Owner");
+  await chooseAndContinue(page, "Product / Product Owner");
   await waitForSaved(page);
 
   // Read the link the participant would copy, without exposing it on screen.
@@ -54,9 +54,60 @@ test("Flow B: a resume link continues the session in a different browser", async
 
   await otherPage.getByRole("button", { name: "Back" }).click();
   await expect(
-    otherPage.getByRole("radio", { name: "Product Owner" })
+    otherPage.getByRole("radio", { name: "Product / Product Owner" })
   ).toBeChecked();
   await otherContext.close();
+});
+
+test("Flow B: a legacy V1 resume link keeps its frozen questionnaire and answers", async ({
+  page,
+  browser,
+}) => {
+  const started = await page.request.post("/api/sessions", {
+    data: {
+      questionnaireVersion: "2.4.0",
+      consentVersion: "v1-resume-e2e",
+      participationConsent: true,
+      recordingConsent: false,
+    },
+  });
+  expect(started.status()).toBe(201);
+  const { resumeToken } = (await started.json()) as { resumeToken: string };
+  expect(resumeToken).not.toMatch(/^v2_/);
+
+  const saved = await page.request.patch("/api/sessions/current", {
+    headers: { "x-resume-token": resumeToken },
+    data: {
+      currentStepId: "question:profile-experience",
+      responses: [
+        {
+          questionKey: "profile-role",
+          value: { kind: "single", value: "product_manager" },
+          skipped: false,
+          method: "selected",
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+    },
+  });
+  expect(saved.status()).toBe(200);
+
+  const context = await browser.newContext();
+  const resumed = await context.newPage();
+  await resumed.goto(
+    `/interview/resume?token=${encodeURIComponent(resumeToken)}`
+  );
+  await expect(
+    resumed.getByRole("heading", {
+      name: "How many years of relevant experience do you have?",
+    })
+  ).toBeVisible();
+  await resumed.getByRole("button", { name: "Back" }).click();
+  await expect(
+    resumed.getByRole("radio", { name: "Product Manager" })
+  ).toBeChecked();
+  expect(resumed.url()).not.toContain("token=");
+  await context.close();
 });
 
 test("Flow B: an unknown resume link is refused with an explanation", async ({
@@ -75,7 +126,7 @@ test("Flow B: Start over abandons the local draft and begins a new session", asy
   page,
 }) => {
   await beginAndConsent(page);
-  await chooseAndContinue(page, "Product / Data Analyst");
+  await chooseAndContinue(page, "Data / Analytics / AI");
   await expect(page.getByText("Saved")).toBeVisible();
 
   // Simulate a returning visitor whose server session is gone but whose

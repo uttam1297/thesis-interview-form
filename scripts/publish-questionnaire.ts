@@ -1,6 +1,5 @@
 /**
- * Publishes src/config/interview.ts to the database as an immutable
- * questionnaire version.
+ * Publishes the frozen legacy V1 questionnaire (storage version 2.4.0).
  *
  *   npm run questionnaire:publish
  *
@@ -12,7 +11,7 @@
  */
 import { createClient } from "@supabase/supabase-js";
 
-import { interviewConfig } from "@/config/interview";
+import { v1InterviewConfig as interviewConfig } from "@/config/questionnaires/v1";
 import { hashDefinition } from "@/features/questionnaire/definition-hash";
 import type { Database } from "@/types/database";
 
@@ -58,7 +57,7 @@ async function main() {
     throw new Error(
       `Version ${interviewConfig.version} is already published with different content.\n` +
         "Responses are tied to its question rows, so it cannot be edited in place.\n" +
-        "Bump `version` in src/config/interview.ts to publish a new version."
+        "Legacy V1 is immutable and cannot be republished with changed content."
     );
   }
 

@@ -6,15 +6,9 @@ import { motion } from "motion/react";
 import { DecisionFlowGraphic } from "@/components/layout/decision-flow-graphic";
 import { Button } from "@/components/ui/button";
 import { study } from "@/config/study";
-import { ESTIMATED_MINUTES } from "@/features/consent/content";
+import { estimatedMinutesFor } from "@/features/consent/content";
 import { useInterview } from "@/features/interview/use-interview";
 import { transitions } from "@/lib/motion";
-
-const highlights = [
-  `About ${ESTIMATED_MINUTES}, and you can pause any time`,
-  "Your responses are anonymized",
-  "Answer by typing or speaking — whichever you prefer",
-];
 
 /** Children appear in sequence, so the eye is led down to the action. */
 const container = {
@@ -28,8 +22,19 @@ const item = {
 };
 
 export function WelcomeScreen() {
-  const { dispatch, pendingDraft, hydrated, resumeDraft, discardDraft } =
-    useInterview();
+  const {
+    config,
+    dispatch,
+    pendingDraft,
+    hydrated,
+    resumeDraft,
+    discardDraft,
+  } = useInterview();
+  const highlights = [
+    `${estimatedMinutesFor(config)}, and you can pause any time`,
+    "Your responses are anonymized",
+    "Answer by typing or speaking — whichever you prefer",
+  ];
 
   return (
     <motion.div

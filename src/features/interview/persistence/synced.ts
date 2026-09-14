@@ -195,6 +195,7 @@ export class SyncedPersistence
     try {
       this.setStatus("saving");
       const { resumeToken } = await sessionApi.start({
+        questionnaireVersion: state.version,
         consentVersion: consent.version,
         participationConsent: true,
         recordingConsent: consent.recordingConsent ?? null,

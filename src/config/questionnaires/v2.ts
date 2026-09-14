@@ -162,7 +162,7 @@ const rawV2Config = {
       ],
       allowOther: true,
       elaborationPrompt: "Which of these mattered most, and why?",
-      elaborationRequired: true,
+      elaborationRequired: false,
     },
     {
       id: "v2_q3_difficulty",

@@ -120,7 +120,7 @@ describe("Questionnaire V2 definition", () => {
     expect(q2.responseType).toBe("multi_select_with_elaboration");
     if (q2.responseType !== "multi_select_with_elaboration") return;
     expect(q2.elaborationPrompt).toBe("Which of these mattered most, and why?");
-    expect(q2.elaborationRequired).toBe(true);
+    expect(q2.elaborationRequired).toBe(false);
     expect(q2.options.some((option) => option.value === "ai_based_tools")).toBe(
       true
     );
@@ -172,14 +172,14 @@ describe("Questionnaire V2 behaviour", () => {
     expect(validateResponse(q1, { kind: "guided_text", text: "A" })).toBeNull();
   });
 
-  it("requires a meaningful Q2 explanation without an arbitrary minimum", () => {
+  it("accepts Q2 selections without an explanation and validates optional text", () => {
     const q2 = question("v2_q2_decision_inputs");
     expect(
       validateResponse(q2, {
         kind: "multi_elaboration",
         values: ["data_analytics"],
       })
-    ).toMatch(/explain which input mattered most/i);
+    ).toBeNull();
     expect(
       validateResponse(q2, {
         kind: "multi_elaboration",

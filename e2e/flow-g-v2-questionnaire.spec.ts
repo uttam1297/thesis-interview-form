@@ -18,20 +18,15 @@ async function reachDecisionInputs(page: Parameters<typeof answerProfile>[0]) {
   ).toBeVisible();
 }
 
-test("V2 keeps Q2 selection and required elaboration on one screen", async ({
+test("V2 allows Q2 selection without an elaboration", async ({
   page,
 }) => {
   await reachDecisionInputs(page);
   await expect(
     page.getByText("Which of these mattered most, and why?")
   ).toBeVisible();
-  await expect(page.getByText("Required", { exact: true })).toBeVisible();
+  await expect(page.getByText("Optional", { exact: true })).toBeVisible();
   await page.getByRole("checkbox", { name: "Data or analytics" }).click();
-  await continueStep(page);
-  await expect(
-    page.getByText(/explain which input mattered most and why/i)
-  ).toBeVisible();
-  await page.getByRole("textbox").fill("The analytics were most important.");
   await continueStep(page);
   await expect(
     page.getByRole("heading", {

@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { SessionError, sessionErrorStatus } from "@/features/sessions/errors";
-import { startSession } from "@/features/sessions/session-service";
+import { startSession } from "@/features/sessions/session-router";
 
 const startSchema = z.object({
+  questionnaireVersion: z.string().min(1).optional(),
   consentVersion: z.string().min(1),
   participationConsent: z.literal(true),
   recordingConsent: z.boolean().nullable().default(null),

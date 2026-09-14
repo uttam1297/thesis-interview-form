@@ -39,29 +39,26 @@ export async function typeAnswer(page: Page, text: string) {
   await continueStep(page);
 }
 
-/** Walks welcome → consent → first section intro. */
+/** Walks welcome → consent → first V2 profile question. */
 export async function beginAndConsent(page: Page) {
   await page.goto("/interview");
   await page.getByRole("button", { name: "Begin the interview" }).click();
   // Participation consent; speech-to-text is a separate, optional box.
   await page.getByRole("checkbox", { name: /agree to take part/i }).click();
   await continueStep(page);
-  await expect(page.getByRole("heading", { name: "About you" })).toBeVisible();
-  await continueStep(page);
+  await expect(
+    page.getByRole("heading", {
+      name: "Which best describes your current role?",
+    })
+  ).toBeVisible();
 }
 
-/** Answers the six profile questions. */
-export async function answerProfile(
-  page: Page,
-  aiFrequency: "Not yet" | "Daily" = "Daily"
-) {
-  await chooseAndContinue(page, "Product Manager");
+/** Answers the four V2 profile questions. */
+export async function answerProfile(page: Page) {
+  await chooseAndContinue(page, "Product / Product Owner");
   await chooseAndContinue(page, "6–10 years");
   await chooseAndContinue(page, "Software / SaaS");
-  await page.getByRole("checkbox", { name: "B2B SaaS" }).click();
-  await continueStep(page);
-  await chooseAndContinue(page, "For most decisions");
-  await chooseAndContinue(page, aiFrequency);
+  await chooseAndContinue(page, "I make or own the decision");
 }
 
 /**
@@ -69,38 +66,50 @@ export async function answerProfile(
  * the review screen.
  */
 export async function answerCoreQuestions(page: Page) {
-  await continueStep(page); // How decisions happen intro
-  await typeAnswer(page, "We start from a metric drop and work backwards.");
-  // The follow-up on what made the decision unusual is required from 2.3.0.
-  await typeAnswer(page, "Two teams disagreed on what the metric meant.");
-  await page.getByRole("checkbox", { name: "Product usage analytics" }).click();
-  await continueStep(page);
-  await typeAnswer(page, "Analytics frames the options; leadership decides.");
+  await typeAnswer(page, "A metric dropped and we had to choose a response.");
 
-  await continueStep(page); // Data and AI intro
-  await typeAnswer(page, "Summarising customer feedback.");
-  await page.getByRole("radio", { name: "4" }).click();
+  await page.getByRole("checkbox", { name: "Data or analytics" }).click();
+  await page.getByRole("checkbox", { name: "AI-based tools" }).click();
+  await page.getByRole("textbox").fill("The data mattered most.");
   await continueStep(page);
-  await typeAnswer(page, "We triangulate against support tickets.");
-  await typeAnswer(page, "Spot-check against the raw data.");
 
-  await continueStep(page); // Challenges intro
-  await typeAnswer(page, "Insights arrive too late to act on.");
-  // Prioritisation factors: choose up to three.
-  await page.getByRole("checkbox", { name: "Effort and cost" }).click();
+  await page.getByRole("textbox").first().fill("The evidence conflicted.");
   await page
-    .getByRole("checkbox", { name: "Expected quantitative impact" })
-    .click();
+    .getByRole("textbox")
+    .nth(1)
+    .fill("We compared the downside of each option.");
   await continueStep(page);
-  await typeAnswer(page, "Impact against effort in planning.");
 
-  await continueStep(page); // Governance intro
-  await typeAnswer(page, "GDPR limits what we can log.");
-  await typeAnswer(page, "We compare the KPI four weeks later.");
+  await page
+    .getByRole("textbox")
+    .first()
+    .fill("We reviewed data quality, privacy, and technical risk.");
+  await page
+    .getByRole("textbox")
+    .nth(1)
+    .fill("We compared the AI output with the raw data.");
+  await continueStep(page);
 
-  await continueStep(page); // Requirements intro
-  await typeAnswer(page, "Explain its reasoning and show the data used.");
-  await page.getByRole("button", { name: "Skip for now" }).click();
+  await page
+    .getByRole("textbox")
+    .first()
+    .fill("Adoption improved after the release.");
+  await page
+    .getByRole("textbox")
+    .nth(1)
+    .fill("We changed the next rollout based on what we learned.");
+  await continueStep(page);
+
+  await page
+    .getByRole("textbox")
+    .first()
+    .fill("Earlier access to reliable evidence would have helped.");
+  await page
+    .getByRole("textbox")
+    .nth(1)
+    .fill("I wish we had a shared evidence summary.");
+  await continueStep(page);
+
   await page.getByRole("button", { name: "Skip for now" }).click();
 
   await expect(

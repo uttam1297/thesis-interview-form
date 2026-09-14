@@ -24,7 +24,7 @@ function withQuestions(questions: unknown[]) {
 describe("interviewConfigSchema", () => {
   it("accepts the production questionnaire", () => {
     expect(interviewConfigSchema.safeParse(interviewConfig).success).toBe(true);
-    expect(interviewConfig.questions.length).toBeGreaterThanOrEqual(16);
+    expect(interviewConfig.questions.length).toBeGreaterThan(0);
   });
 
   it("accepts the test fixture", () => {

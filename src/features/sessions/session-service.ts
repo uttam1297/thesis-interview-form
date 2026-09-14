@@ -34,6 +34,7 @@ export interface SessionSnapshot {
   responseMode: ResponseMode;
   status: Database["public"]["Enums"]["session_status"];
   questionnaireVersion: string;
+  studyStage?: "pilot_v2" | "formal_v2" | "not_recorded";
   config: InterviewConfig;
   currentStepId: string;
   returnToReview: boolean;
@@ -62,7 +63,10 @@ function firstStepAfterConsent(config: InterviewConfig): string {
   return steps[consentIndex + 1]?.id ?? "review";
 }
 
-async function activeQuestionnaire(supabase: Supabase) {
+async function activeQuestionnaire(
+  supabase: Supabase,
+  requestedVersion?: string
+) {
   const { STUDY_SLUG } = serverEnv();
 
   const { data: study, error: studyError } = await supabase
@@ -74,17 +78,21 @@ async function activeQuestionnaire(supabase: Supabase) {
     throw new SessionError("unavailable", "Study is not configured");
   }
 
-  const { data: version, error: versionError } = await supabase
+  let query = supabase
     .from("questionnaire_versions")
     .select("id, version, definition")
-    .eq("study_id", study.id)
+    .eq("study_id", study.id);
+  // A deployed browser may still show an older definition while a new one
+  // is being published. Save answers against the version it actually shows.
+  if (requestedVersion) query = query.eq("version", requestedVersion);
+  const { data: version, error: versionError } = await query
     .order("published_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (versionError || !version) {
     throw new SessionError(
       "unavailable",
-      "No questionnaire version has been published"
+      "The requested questionnaire version has not been published"
     );
   }
 
@@ -109,6 +117,7 @@ async function questionsFor(
 
 /** Creates a participant, session and consent record in one participant-facing step. */
 export async function startSession(input: {
+  questionnaireVersion?: string;
   consentVersion: string;
   participationConsent: boolean;
   recordingConsent: boolean | null;
@@ -123,7 +132,10 @@ export async function startSession(input: {
   }
 
   const supabase = createAdminClient();
-  const { studyId, version } = await activeQuestionnaire(supabase);
+  const { studyId, version } = await activeQuestionnaire(
+    supabase,
+    input.questionnaireVersion
+  );
 
   const { data: code, error: codeError } = await supabase.rpc(
     "next_participant_code",

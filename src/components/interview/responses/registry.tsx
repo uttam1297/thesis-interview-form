@@ -20,6 +20,20 @@ const VoiceTextResponse = dynamic(
     ),
   { ssr: false }
 );
+const GuidedOpenResponse = dynamic(
+  () =>
+    import("@/components/interview/responses/guided-open-response").then(
+      (m) => m.GuidedOpenResponse
+    ),
+  { ssr: false }
+);
+const MultiSelectElaborationResponse = dynamic(
+  () =>
+    import("@/components/interview/responses/multi-select-elaboration-response").then(
+      (m) => m.MultiSelectElaborationResponse
+    ),
+  { ssr: false }
+);
 const RankingResponse = dynamic(
   () =>
     import("@/components/interview/responses/ranking-response").then(
@@ -49,6 +63,8 @@ const registry: {
   optional_elaboration: VoiceTextResponse as ComponentType<
     ResponseComponentProps<"optional_elaboration">
   >,
+  guided_open: GuidedOpenResponse,
+  multi_select_with_elaboration: MultiSelectElaborationResponse,
 };
 
 export function ResponseRenderer(props: ResponseComponentProps) {

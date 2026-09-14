@@ -26,16 +26,23 @@ test("Flow D: researcher signs in, opens a session and exports data", async ({
   // Produce a session to look at. Saving is debounced, so let the last
   // answer reach the server before reading it back through the export.
   await beginAndConsent(page);
-  await answerProfile(page, "Daily");
+  await answerProfile(page);
   await waitForSaved(page);
 
   await signInAsResearcher(page);
 
   // Overview and list.
   await expect(page.getByRole("link", { name: "By construct" })).toBeVisible();
-  const firstParticipant = page.getByRole("link", { name: /^P\d{3}$/ }).first();
+  const firstParticipant = page
+    .getByRole("link", { name: /^(?:V2)?P\d{3}$/ })
+    .first();
   await expect(firstParticipant).toBeVisible();
   const participantCode = (await firstParticipant.textContent())?.trim();
+  const participantRow = firstParticipant.locator("xpath=ancestor::tr");
+  await expect(participantRow.getByText("V2", { exact: true })).toBeVisible();
+  await expect(
+    participantRow.getByText("pilot_v2", { exact: true })
+  ).toBeVisible();
   await firstParticipant.click();
 
   // Session detail: profile, consent state and responses by construct.
@@ -45,7 +52,9 @@ test("Flow D: researcher signs in, opens a session and exports data", async ({
   await expect(page.getByText("Session and consent")).toBeVisible();
   await expect(page.getByText("Participation")).toBeVisible();
   await expect(page.getByText("Responses by construct")).toBeVisible();
-  await expect(page.getByText("participant_profile")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "participant_profile" })
+  ).toBeVisible();
 
   // Researcher notes are stored against the session, not mixed into answers.
   await page
@@ -60,12 +69,20 @@ test("Flow D: researcher signs in, opens a session and exports data", async ({
     page.getByRole("heading", { name: "Responses by construct" })
   ).toBeVisible();
 
+  await page.getByRole("link", { name: "Pilot" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Pilot signals" })
+  ).toBeVisible();
+  await expect(page.getByText("V2", { exact: true }).first()).toBeVisible();
+
   // Exports.
   const csv = await page.request.get("/api/admin/export?format=csv");
   expect(csv.status()).toBe(200);
   expect(csv.headers()["content-type"]).toContain("text/csv");
   const csvBody = await csv.text();
-  expect(csvBody).toContain("participant_code,response_mode");
+  expect(csvBody).toContain(
+    "participant_code,storage_generation,questionnaire_version,study_stage"
+  );
   expect(csvBody).toContain(participantCode!);
   // Internal identifiers and tokens stay out of research exports.
   expect(csvBody).not.toContain("resume_token");
@@ -80,7 +97,7 @@ test("Flow D: researcher signs in, opens a session and exports data", async ({
 
   const long = await page.request.get("/api/admin/export?format=long");
   expect(await long.text()).toContain(
-    "participant,construct,question,response,collection_mode"
+    "participant,questionnaire_version,study_stage,question_id,construct"
   );
 });
 
@@ -89,7 +106,7 @@ test("Flow D: a participant cannot reach another participant's session", async (
   browser,
 }) => {
   await beginAndConsent(page);
-  await chooseAndContinue(page, "Product Manager");
+  await chooseAndContinue(page, "Product / Product Owner");
   await expect(page.getByText("Saved")).toBeVisible();
   const victimToken = await page.evaluate(() =>
     window.localStorage.getItem("interview:resume-token")
@@ -118,11 +135,13 @@ test("Flow D: a withdrawal request deletes that participant's responses", async 
 }) => {
   // A session to withdraw.
   await beginAndConsent(page);
-  await answerProfile(page, "Daily");
+  await answerProfile(page);
   await waitForSaved(page);
 
   await signInAsResearcher(page);
-  const participant = page.getByRole("link", { name: /^P\d{3}$/ }).first();
+  const participant = page
+    .getByRole("link", { name: /^(?:V2)?P\d{3}$/ })
+    .first();
   const participantCode = (await participant.textContent())?.trim();
   await participant.click();
 

@@ -9,7 +9,7 @@ import {
 
 test("a submitted session cannot be re-entered", async ({ page }) => {
   await beginAndConsent(page);
-  await answerProfile(page, "Daily");
+  await answerProfile(page);
   await answerCoreQuestions(page);
   await page.getByRole("button", { name: "Submit" }).click();
   await expect(page.getByRole("heading", { name: "Thank you." })).toBeVisible();
@@ -23,7 +23,7 @@ test("a submitted session cannot be re-entered", async ({ page }) => {
 
 test("submit cannot be pressed twice", async ({ page }) => {
   await beginAndConsent(page);
-  await answerProfile(page, "Daily");
+  await answerProfile(page);
   await answerCoreQuestions(page);
 
   const submit = page.getByRole("button", { name: "Submit" });
@@ -38,7 +38,7 @@ test("a second tab is told to stand down instead of overwriting answers", async 
   page,
 }) => {
   await beginAndConsent(page);
-  await chooseAndContinue(page, "Product Manager");
+  await chooseAndContinue(page, "Product / Product Owner");
   await expect(page.getByText("Saved")).toBeVisible();
 
   // Simulate another live tab holding the session: a fresh heartbeat under
@@ -67,7 +67,7 @@ test("a second tab is told to stand down instead of overwriting answers", async 
   // The answer given before the clash is still there.
   await page.getByRole("button", { name: "Back" }).click();
   await expect(
-    page.getByRole("radio", { name: "Product Manager" })
+    page.getByRole("radio", { name: "Product / Product Owner" })
   ).toBeChecked();
 });
 
@@ -87,19 +87,28 @@ test("the skip link takes keyboard users straight to the question", async ({
   await expect(page).toHaveURL(/#interview-content/, { timeout: 10000 });
 });
 
-test("section transitions show position rather than an invented duration", async ({
+test("V2 shows journey progress without a question-count workload", async ({
   page,
 }) => {
-  // Stop on the section intro rather than walking past it.
   await page.goto("/interview");
   await page.getByRole("button", { name: "Begin the interview" }).click();
   await page.getByRole("checkbox", { name: /agree to take part/i }).click();
   await page.getByRole("button", { name: "Continue" }).first().click();
 
-  await expect(page.getByRole("heading", { name: "About you" })).toBeVisible();
-  // No pilot timings exist yet, so no minutes estimate is claimed.
-  await expect(page.getByText(/minutes remaining/i)).toHaveCount(0);
-  await expect(page.getByText(/Section \d of \d/)).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Which best describes your current role?",
+    })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("progressbar", { name: /Progress: About you/ })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: "Your interview path" })
+  ).toBeVisible();
+  await expect(page.getByText(/answered so far/i)).toHaveCount(0);
+  await expect(page.getByText(/of 11|question 1/i)).toHaveCount(0);
+  await expect(page.getByRole("img", { name: /of 11/i })).toHaveCount(0);
 });
 
 test("an unexpected page shows a helpful not-found screen", async ({

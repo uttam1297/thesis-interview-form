@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { getResearcher } from "@/features/admin/auth";
 import { SessionError, sessionErrorStatus } from "@/features/sessions/errors";
-import { startSession } from "@/features/sessions/session-service";
+import { startSession } from "@/features/sessions/session-router";
 
 const createSchema = z.object({
   consentVersion: z.string().min(1),

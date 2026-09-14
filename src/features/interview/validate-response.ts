@@ -45,6 +45,27 @@ export function validateResponse(
       }
       return null;
     }
+    case "multi_select_with_elaboration": {
+      if (value.kind !== "multi_elaboration")
+        return "Choose at least one option.";
+      const min = question.validation?.minSelections ?? 1;
+      const max = question.validation?.maxSelections;
+      if (value.values.length < min) return "Choose at least one option.";
+      if (max !== undefined && value.values.length > max) {
+        return `Choose no more than ${max} options.`;
+      }
+      if (value.values.includes(OTHER_VALUE) && !value.other?.trim()) {
+        return "Please describe your answer for “Other”.";
+      }
+      const elaboration = value.optionalElaboration?.trim() ?? "";
+      if (question.elaborationRequired && !elaboration) {
+        return "Please explain which input mattered most and why.";
+      }
+      if (elaboration && !hasMeaningfulOpenText(elaboration)) {
+        return "Please use words or numbers in your explanation.";
+      }
+      return null;
+    }
     case "likert_scale": {
       if (value.kind !== "scale") return "Choose a point on the scale.";
       if (value.value < question.min || value.value > question.max) {
@@ -72,6 +93,13 @@ export function validateResponse(
       const text = value.text.trim();
       if (question.required && text.length === 0)
         return "Enter an answer to continue.";
+      if (
+        question.id.startsWith("v2_") &&
+        text.length > 0 &&
+        !hasMeaningfulOpenText(text)
+      ) {
+        return "Please use words or numbers, or leave this optional answer blank.";
+      }
       const { minLength, maxLength } = question.validation ?? {};
       if (
         minLength !== undefined &&
@@ -85,7 +113,39 @@ export function validateResponse(
       }
       return null;
     }
+    case "guided_open": {
+      if (value.kind !== "guided_text") return "Enter or choose an answer.";
+      const text = value.text.trim();
+      const nonAnswer = value.nonAnswer;
+      const allowedNonAnswers = new Set(
+        question.nonAnswerOptions?.map((option) => option.value) ?? []
+      );
+      if (nonAnswer && !allowedNonAnswers.has(nonAnswer)) {
+        return "Choose one of the available responses.";
+      }
+      if (!nonAnswer && !hasMeaningfulOpenText(text)) {
+        return text
+          ? "Please use words or numbers in your answer."
+          : "Enter an answer or choose one of the alternatives.";
+      }
+      if (
+        value.optionalElaboration?.trim() &&
+        !hasMeaningfulOpenText(value.optionalElaboration)
+      ) {
+        return "Please use words or numbers in the optional answer.";
+      }
+      const { maxLength } = question.validation ?? {};
+      if (maxLength !== undefined && text.length > maxLength) {
+        return `Please keep this under ${maxLength} characters.`;
+      }
+      return null;
+    }
   }
+}
+
+/** A response needs at least one Unicode letter or number, but no arbitrary length. */
+export function hasMeaningfulOpenText(text: string): boolean {
+  return /[\p{L}\p{N}]/u.test(text);
 }
 
 /** Sentinel option value used when `allowOther` is enabled. */

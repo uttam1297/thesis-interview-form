@@ -7,6 +7,7 @@ import { withdrawSession } from "@/features/admin/withdrawal";
 const withdrawSchema = z.object({
   /** Free text, e.g. "emailed 2026-09-14 quoting P014". Never the reason why. */
   note: z.string().max(500).optional(),
+  source: z.enum(["v1", "v2"]).default("v1"),
 });
 
 /**
@@ -39,6 +40,7 @@ export async function POST(
       sessionId: id,
       researcherId: researcher.userId,
       note: parsed.data.note,
+      storageGeneration: parsed.data.source,
     });
     return NextResponse.json(result);
   } catch (error) {

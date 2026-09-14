@@ -14,14 +14,17 @@ import type { InterviewQuestion, ResponseValue } from "@/types/interview";
 export type ExportFormat = "csv" | "json" | "long";
 
 interface ExportRow {
+  storage_generation: "v1" | "v2";
   participant_code: string;
   response_mode: Database["public"]["Enums"]["response_mode"];
   session_status: Database["public"]["Enums"]["session_status"];
   questionnaire_version: string;
+  study_stage: "not_recorded" | "pilot_v2" | "formal_v2";
   role: string | null;
   industry: string | null;
   question_id: string;
   construct: string;
+  constructs: string[];
   response_type: string;
   response: string;
   skipped: boolean;
@@ -61,7 +64,7 @@ const PAGE_SIZE = 1000;
 async function loadRows(): Promise<ExportRow[]> {
   const supabase = await createServerSupabaseClient();
 
-  const collected: unknown[] = [];
+  const legacyCollected: unknown[] = [];
   for (let page = 0; ; page += 1) {
     const { data, error } = await supabase
       .from("responses")
@@ -78,11 +81,11 @@ async function loadRows(): Promise<ExportRow[]> {
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
     if (error) throw new Error(`Export query failed: ${error.message}`);
-    collected.push(...(data ?? []));
+    legacyCollected.push(...(data ?? []));
     if (!data || data.length < PAGE_SIZE) break;
   }
 
-  const rows = collected as unknown as Array<{
+  const legacyRows = legacyCollected as unknown as Array<{
     question_key: string;
     construct: string;
     response_type: string;
@@ -99,47 +102,57 @@ async function loadRows(): Promise<ExportRow[]> {
     questionnaire_questions: { definition: unknown; position: number } | null;
   }>;
 
-  // Role and industry are repeated on every row so the CSV can be filtered
-  // and grouped without a join.
-  const profileByParticipant = new Map<
-    string,
-    { role?: string; industry?: string }
-  >();
-  for (const row of rows) {
-    const code = row.sessions.participants.participant_code;
-    const question = row.questionnaire_questions
-      ?.definition as InterviewQuestion | null;
-    const answer = renderAnswer(
-      question,
-      row.value as ResponseValue | null,
-      row.skipped
-    );
-    if (
-      row.question_key === "profile-role" ||
-      row.question_key === "profile-industry"
-    ) {
-      const entry = profileByParticipant.get(code) ?? {};
-      if (row.question_key === "profile-role") entry.role = answer;
-      else entry.industry = answer;
-      profileByParticipant.set(code, entry);
-    }
+  const v2Collected: unknown[] = [];
+  for (let page = 0; ; page += 1) {
+    const { data, error } = await supabase
+      .from("interview_v2_responses")
+      .select(
+        `question_id, constructs, response_type, response_value, skipped,
+         method, created_at,
+         interview_v2_sessions ( participant_code, response_mode, status,
+           questionnaire_version, study_stage ),
+         interview_v2_questions ( definition, position )`
+      )
+      .order("created_at", { ascending: true })
+      .order("question_id", { ascending: true })
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    if (error) throw new Error(`V2 export query failed: ${error.message}`);
+    v2Collected.push(...(data ?? []));
+    if (!data || data.length < PAGE_SIZE) break;
   }
 
-  return rows
-    .map((row) => {
+  const v2Rows = v2Collected as Array<{
+    question_id: string;
+    constructs: string[];
+    response_type: string;
+    response_value: unknown;
+    skipped: boolean;
+    method: string;
+    created_at: string;
+    interview_v2_sessions: {
+      participant_code: string;
+      response_mode: Database["public"]["Enums"]["response_mode"];
+      status: Database["public"]["Enums"]["session_status"];
+      questionnaire_version: string;
+      study_stage: "pilot_v2" | "formal_v2";
+    };
+    interview_v2_questions: { definition: unknown; position: number } | null;
+  }>;
+
+  const withoutProfiles: Array<Omit<ExportRow, "role" | "industry">> = [
+    ...legacyRows.map((row) => {
       const question = row.questionnaire_questions
         ?.definition as InterviewQuestion | null;
-      const code = row.sessions.participants.participant_code;
-      const profile = profileByParticipant.get(code) ?? {};
       return {
-        participant_code: code,
+        storage_generation: "v1" as const,
+        participant_code: row.sessions.participants.participant_code,
         response_mode: row.sessions.response_mode,
         session_status: row.sessions.status,
         questionnaire_version: row.sessions.questionnaire_versions.version,
-        role: profile.role ?? null,
-        industry: profile.industry ?? null,
+        study_stage: "not_recorded" as const,
         question_id: row.question_key,
         construct: row.construct,
+        constructs: [row.construct],
         response_type: row.response_type,
         response: renderAnswer(
           question,
@@ -151,6 +164,65 @@ async function loadRows(): Promise<ExportRow[]> {
         recorded_at: row.recorded_at,
         raw: (row.value as ResponseValue | null) ?? null,
         prompt: question?.prompt ?? row.question_key,
+      };
+    }),
+    ...v2Rows.map((row) => {
+      const question = row.interview_v2_questions
+        ?.definition as InterviewQuestion | null;
+      return {
+        storage_generation: "v2" as const,
+        participant_code: row.interview_v2_sessions.participant_code,
+        response_mode: row.interview_v2_sessions.response_mode,
+        session_status: row.interview_v2_sessions.status,
+        questionnaire_version: row.interview_v2_sessions.questionnaire_version,
+        study_stage: row.interview_v2_sessions.study_stage,
+        question_id: row.question_id,
+        construct: row.constructs[0] ?? "unclassified",
+        constructs: row.constructs,
+        response_type: row.response_type,
+        response: renderAnswer(
+          question,
+          row.response_value as ResponseValue | null,
+          row.skipped
+        ),
+        skipped: row.skipped,
+        method: row.method,
+        recorded_at: row.created_at,
+        raw: (row.response_value as ResponseValue | null) ?? null,
+        prompt: question?.prompt ?? row.question_id,
+      };
+    }),
+  ];
+
+  // Role and industry are repeated on every row so the CSV can be filtered
+  // and grouped without a join.
+  const profileByParticipant = new Map<
+    string,
+    { role?: string; industry?: string }
+  >();
+  for (const row of withoutProfiles) {
+    const key = `${row.storage_generation}:${row.participant_code}`;
+    if (
+      row.question_id === "profile-role" ||
+      row.question_id === "profile-industry" ||
+      row.question_id === "v2_profile_role" ||
+      row.question_id === "v2_profile_industry"
+    ) {
+      const entry = profileByParticipant.get(key) ?? {};
+      if (row.question_id.endsWith("role")) entry.role = row.response;
+      else entry.industry = row.response;
+      profileByParticipant.set(key, entry);
+    }
+  }
+
+  return withoutProfiles
+    .map((row) => {
+      const key = `${row.storage_generation}:${row.participant_code}`;
+      const profile = profileByParticipant.get(key) ?? {};
+      return {
+        ...row,
+        role: profile.role ?? null,
+        industry: profile.industry ?? null,
       };
     })
     .sort(
@@ -169,17 +241,21 @@ export async function buildExport(
   if (format === "json") {
     const bySession = new Map<string, Record<string, unknown>>();
     for (const row of rows) {
-      const existing = bySession.get(row.participant_code) ?? {
+      const sessionKey = `${row.storage_generation}:${row.participant_code}`;
+      const existing = bySession.get(sessionKey) ?? {
+        storage_generation: row.storage_generation,
         participant_code: row.participant_code,
         response_mode: row.response_mode,
         session_status: row.session_status,
         questionnaire_version: row.questionnaire_version,
+        study_stage: row.study_stage,
         responses: [] as unknown[],
       };
       (existing.responses as unknown[]).push({
         question_id: row.question_id,
         prompt: row.prompt,
         construct: row.construct,
+        constructs: row.constructs,
         response_type: row.response_type,
         value: row.raw,
         rendered: row.response,
@@ -187,7 +263,7 @@ export async function buildExport(
         method: row.method,
         recorded_at: row.recorded_at,
       });
-      bySession.set(row.participant_code, existing);
+      bySession.set(sessionKey, existing);
     }
     return {
       body: JSON.stringify(
@@ -207,10 +283,24 @@ export async function buildExport(
     // Qualitative coding format: one row per answer, minimal columns.
     return {
       body: toCsv(
-        ["participant", "construct", "question", "response", "collection_mode"],
+        [
+          "participant",
+          "questionnaire_version",
+          "study_stage",
+          "question_id",
+          "construct",
+          "constructs",
+          "question",
+          "response",
+          "collection_mode",
+        ],
         rows.map((row) => [
           row.participant_code,
+          row.questionnaire_version,
+          row.study_stage,
+          row.question_id,
           row.construct,
+          row.constructs.join(" | "),
           row.prompt,
           row.response,
           row.response_mode,
@@ -225,32 +315,38 @@ export async function buildExport(
     body: toCsv(
       [
         "participant_code",
+        "storage_generation",
+        "questionnaire_version",
+        "study_stage",
         "response_mode",
         "session_status",
         "role",
         "industry",
         "question_id",
         "construct",
+        "constructs",
         "response_type",
         "response",
         "skipped",
         "method",
-        "questionnaire_version",
         "recorded_at",
       ],
       rows.map((row) => [
         row.participant_code,
+        row.storage_generation,
+        row.questionnaire_version,
+        row.study_stage,
         row.response_mode,
         row.session_status,
         row.role,
         row.industry,
         row.question_id,
         row.construct,
+        row.constructs.join(" | "),
         row.response_type,
         row.response,
         row.skipped,
         row.method,
-        row.questionnaire_version,
         row.recorded_at,
       ])
     ),

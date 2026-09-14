@@ -7,15 +7,20 @@ import { WithdrawSession } from "@/app/admin/(protected)/sessions/[id]/withdraw-
 import { RETENTION_MONTHS } from "@/features/consent/content";
 import { formatAnswer } from "@/features/interview/format-answer";
 import { getSessionDetail } from "@/features/admin/queries";
+import type { StorageGeneration } from "@/features/admin/queries";
 
 export const metadata: Metadata = { title: "Session" };
 export const dynamic = "force-dynamic";
 
 export default async function SessionDetailPage({
   params,
+  searchParams,
 }: PageProps<"/admin/sessions/[id]">) {
   const { id } = await params;
-  const session = await getSessionDetail(id);
+  const query = await searchParams;
+  const storageGeneration: StorageGeneration =
+    query.source === "v2" ? "v2" : "v1";
+  const session = await getSessionDetail(id, storageGeneration);
   if (!session) notFound();
 
   const consentRows: Array<[string, string]> = session.consent
@@ -60,7 +65,11 @@ export default async function SessionDetailPage({
           {session.responseMode === "live_interview"
             ? "Live interview"
             : "Async form"}{" "}
-          · {session.status} · questionnaire {session.questionnaireVersion}
+          · {session.status} · {session.storageGeneration.toUpperCase()} ·
+          questionnaire {session.questionnaireVersion} · stage{" "}
+          {session.studyStage === "not_recorded"
+            ? "not recorded"
+            : session.studyStage}
         </p>
       </div>
 
@@ -99,7 +108,11 @@ export default async function SessionDetailPage({
         </dl>
       </section>
 
-      <SessionNotes sessionId={session.id} notes={session.researcherNotes} />
+      <SessionNotes
+        sessionId={session.id}
+        notes={session.researcherNotes}
+        storageGeneration={session.storageGeneration}
+      />
 
       <WithdrawSession
         sessionId={session.id}
@@ -108,6 +121,7 @@ export default async function SessionDetailPage({
           session.status === "withdrawn" ||
           session.consent?.withdrawnAt !== null
         }
+        storageGeneration={session.storageGeneration}
       />
 
       <section
@@ -148,6 +162,7 @@ export default async function SessionDetailPage({
                       : JSON.stringify(response.value)}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
+                    Constructs: {response.constructs.join(", ")} ·{" "}
                     {response.method} ·{" "}
                     {new Date(response.updatedAt).toLocaleString()}
                   </p>

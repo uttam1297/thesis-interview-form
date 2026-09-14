@@ -24,14 +24,14 @@ UI (components/)
       → Supabase
 ```
 
-| Layer                | Location                              | Responsibility                                                                                       |
-| -------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Questionnaire config | `src/config/interview.ts`             | The research instrument. Zod-validated. No wording lives in components.                              |
-| Engine               | `src/features/interview/`             | Pure step derivation, conditional visibility, progress, validation, reducer.                         |
-| Persistence          | `src/features/interview/persistence/` | `DraftStorage` / `SubmissionRepository` interfaces with local, synced and in-memory implementations. |
-| Sessions             | `src/features/sessions/`              | Server-side session lifecycle and resume-token handling.                                             |
-| Voice                | `src/features/voice/`                 | `SpeechRecognitionAdapter` boundary + Web Speech implementation.                                     |
-| Admin                | `src/features/admin/`                 | Researcher queries, exports, auth guard.                                                             |
+| Layer                | Location                              | Responsibility                                                                                          |
+| -------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Questionnaire config | `src/config/questionnaires/`          | Immutable V1/V2 instruments and active-version registry. Zod-validated; no wording lives in components. |
+| Engine               | `src/features/interview/`             | Pure step derivation, conditional visibility, progress, validation, reducer.                            |
+| Persistence          | `src/features/interview/persistence/` | `DraftStorage` / `SubmissionRepository` interfaces with local, synced and in-memory implementations.    |
+| Sessions             | `src/features/sessions/`              | Server-side session lifecycle and resume-token handling.                                                |
+| Voice                | `src/features/voice/`                 | `SpeechRecognitionAdapter` boundary + Web Speech implementation.                                        |
+| Admin                | `src/features/admin/`                 | Researcher queries, exports, auth guard.                                                                |
 
 Two rules hold the design together: **question wording is data, never code**,
 and **the step list is derived, never stored** — so changing an earlier answer
@@ -86,8 +86,21 @@ project.
 
 ## Questionnaire configuration
 
-Questions live in `src/config/interview.ts`, typed and Zod-validated. Editing
-wording, options, order or branching needs no component changes.
+The original 24-question V1 definition is frozen in
+`src/config/questions.json` and exposed by `src/config/questionnaires/v1.ts`.
+The active 11-question V2 definition lives separately in
+`src/config/questionnaires/v2.ts`. Never edit or reuse IDs from a published
+definition. A plain question list or structured JSON can generate a review
+artifact for a future additive version:
+
+```bash
+npm run questionnaire:import -- path/to/questions.md --check
+npm run questionnaire:import -- path/to/questions.md --output /tmp/review.json
+```
+
+See [the question-only workflow](docs/QUESTIONNAIRE-WORKFLOW.md) for formats,
+defaults, examples and delivery steps, and [the repository guide](docs/REPOSITORY-GUIDE.md)
+for the complete stack, architecture and study-specific settings.
 
 **Publishing:**
 
@@ -95,18 +108,16 @@ wording, options, order or branching needs no component changes.
 npm run questionnaire:publish
 ```
 
-This freezes the current config as an immutable version row plus one row per
-question. Responses reference those question rows, so collected data always
-keeps the wording it was answered under.
+This publishes V2 into its isolated V2 questionnaire tables. Responses
+reference those frozen question rows, so collected data always keeps the
+wording it was answered under. `npm run questionnaire:publish:v1` exists only
+for fresh local setup and idempotent verification of the frozen legacy version.
 
-**Creating a new version** (required once collection has begun):
-
-1. Edit `src/config/interview.ts`.
-2. Bump `version` (e.g. `2.0.0` → `2.1.0`).
-3. Run `npm run questionnaire:publish`.
-
-Republishing an existing version with changed content is refused. New sessions
-use the newest version; in-flight sessions keep the version they started on.
+New participant and live-interview sessions use V2 and write only to
+`interview_v2_*` tables. In-flight V1 sessions continue through the legacy
+tables with their frozen database definition. Republish attempts with changed
+V1 or V2 content are refused. A future V3 must use new IDs and an additive
+registry, publisher, and storage path; it must never overwrite V1 or V2.
 
 ## Exporting research data
 
@@ -119,9 +130,10 @@ while signed in:
 | JSON            | `/api/admin/export?format=json` | Full response structures                                          |
 | Qualitative CSV | `/api/admin/export?format=long` | Thematic coding: participant, construct, question, response, mode |
 
-Exports carry `participant_code`, never internal ids or resume tokens, and
-always include `response_mode` so live and asynchronous data stay
-distinguishable. `method` distinguishes participant-typed, dictated and
+Exports carry `participant_code`, never internal ids or resume tokens. They
+include `storage_generation`, `questionnaire_version`, `study_stage`,
+`question_id`, `constructs`, and `response_mode`, so V1/V2 and live/form data
+stay distinguishable. `method` distinguishes participant-typed, dictated and
 researcher-entered answers.
 
 ## Recording a live interview
@@ -173,7 +185,7 @@ npm run build
 
 ## Privacy and operational notes
 
-- Participants are pseudonymous: a `P001`-style code for analysis and a
+- Participants are pseudonymous: a legacy `P001` or V2 `V2P001`-style code for analysis and a
   separate 32-byte resume token, stored only as a SHA-256 hash and expiring
   after 30 days. No names or email addresses are collected.
 - The resume link is a bearer credential — anyone holding it can continue that

@@ -20,7 +20,7 @@ import {
 import { SectionIntroScreen } from "@/components/interview/screens/section-intro-screen";
 import { WelcomeScreen } from "@/components/interview/screens/welcome-screen";
 import { InterviewShell } from "@/components/layout/interview-shell";
-import type { Step } from "@/features/interview/steps";
+import { visibleQuestionSteps, type Step } from "@/features/interview/steps";
 import { useInterview } from "@/features/interview/use-interview";
 import { useSessionLock } from "@/features/interview/use-session-lock";
 import { stepVariants, transitions } from "@/lib/motion";
@@ -44,7 +44,7 @@ function renderStep(step: Step) {
 
 /** Routes the current engine step to its screen and wraps it in the shell. */
 export function InterviewRunner() {
-  const { currentStep, progress, state, steps } = useInterview();
+  const { config, currentStep, progress, state, steps } = useInterview();
   // Only guard against a second tab while there are answers to protect.
   const { hasLock, reclaim } = useSessionLock(state.status === "in_progress");
 
@@ -69,9 +69,14 @@ export function InterviewRunner() {
   // or participants lose that reassurance between sections.
   const showPath = currentStep.kind === "question";
   const showProgressRow = showPath || currentStep.kind === "section-intro";
-  const sections = steps
-    .filter((s) => s.kind === "section-intro")
-    .map((s) => ({ id: s.section.id, label: s.section.label }));
+  const sections = visibleQuestionSteps(steps).reduce<
+    Array<{ id: string; label: string }>
+  >((items, step) => {
+    if (!items.some((item) => item.id === step.section.id)) {
+      items.push({ id: step.section.id, label: step.section.label });
+    }
+    return items;
+  }, []);
   const currentSectionId =
     currentStep.kind === "question" || currentStep.kind === "section-intro"
       ? currentStep.section.id
@@ -114,6 +119,7 @@ export function InterviewRunner() {
                 sections={sections}
                 currentIndex={Math.max(currentSectionIndex, 0)}
                 percent={progress.percent}
+                journey={config.experience === "journey"}
               />
             </div>
             {/* Kept in view: participants should see saves without scrolling. */}

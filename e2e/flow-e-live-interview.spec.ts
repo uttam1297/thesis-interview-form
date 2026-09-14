@@ -1,11 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import {
-  chooseAndContinue,
-  continueStep,
-  signInAsResearcher,
-  typeAnswer,
-} from "./helpers";
+import { chooseAndContinue, signInAsResearcher, typeAnswer } from "./helpers";
 
 test("Flow E: researcher records a live interview using the same questionnaire", async ({
   page,
@@ -28,27 +23,19 @@ test("Flow E: researcher records a live interview using the same questionnaire",
 
   // The same engine, with dictation off for researcher entry.
   await expect(
-    page.getByText(/Live interview · participant P\d{3}/)
+    page.getByText(/Live interview · participant V2P\d{3}/)
   ).toBeVisible();
   await expect(page.getByRole("button", { name: /speak answer/i })).toHaveCount(
     0
   );
 
-  await continueStep(page); // section intro
-  await chooseAndContinue(page, "Product Owner");
+  await chooseAndContinue(page, "Product / Product Owner");
   await chooseAndContinue(page, "More than 10 years");
   await expect(
     page.getByRole("heading", { name: /which industry/i })
   ).toBeVisible();
   await chooseAndContinue(page, "Energy or industrial");
-  await page
-    .getByRole("checkbox", { name: "Internal platform or tooling" })
-    .click();
-  await continueStep(page);
-  await chooseAndContinue(page, "Sometimes");
-  await chooseAndContinue(page, "Occasionally");
-
-  await continueStep(page); // How decisions happen intro
+  await chooseAndContinue(page, "I recommend options");
   await typeAnswer(page, "Decisions are made in a weekly steering meeting.");
 
   // Wait for the answers to reach the server before reading them back.

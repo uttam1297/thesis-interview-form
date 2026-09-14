@@ -9,6 +9,8 @@ interface AnswerConstellationProps {
   answered: number;
   /** Zero-based position of the question on screen. */
   currentIndex: number;
+  /** Optional non-numeric description for experiences that avoid question counts. */
+  ariaLabel?: string;
   className?: string;
 }
 
@@ -65,6 +67,7 @@ export function AnswerConstellation({
   total,
   answered,
   currentIndex,
+  ariaLabel,
   className,
 }: AnswerConstellationProps) {
   const reduced = useReducedMotion();
@@ -75,7 +78,9 @@ export function AnswerConstellation({
     <svg
       viewBox="0 0 300 250"
       role="img"
-      aria-label={`${answered} of ${total} questions answered so far`}
+      aria-label={
+        ariaLabel ?? `${answered} of ${total} questions answered so far`
+      }
       className={className}
       fill="none"
     >

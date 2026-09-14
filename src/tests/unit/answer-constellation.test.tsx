@@ -14,6 +14,22 @@ describe("AnswerConstellation", () => {
     ).toBeInTheDocument();
   });
 
+  it("supports a non-numeric accessible label for journey mode", () => {
+    render(
+      <AnswerConstellation
+        total={11}
+        answered={0}
+        currentIndex={0}
+        ariaLabel="Your interview path"
+      />
+    );
+
+    expect(
+      screen.getByRole("img", { name: "Your interview path" })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /of 11/i })).toBeNull();
+  });
+
   it("draws one point per question", () => {
     const { container } = render(
       <AnswerConstellation total={6} answered={3} currentIndex={3} />

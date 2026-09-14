@@ -14,11 +14,16 @@ function answeredValues(record: ResponseRecord | undefined): string[] | null {
       return [value.value];
     case "multi":
       return value.values;
+    case "multi_elaboration":
+      return value.values;
     case "scale":
       return [String(value.value)];
     case "ranking":
       return value.order;
     case "text":
+      return value.text.trim() ? [value.text] : null;
+    case "guided_text":
+      if (value.nonAnswer) return [value.nonAnswer];
       return value.text.trim() ? [value.text] : null;
     default:
       return null;

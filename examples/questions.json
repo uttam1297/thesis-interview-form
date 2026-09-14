@@ -1,0 +1,43 @@
+{
+  "sections": [
+    { "id": "context", "label": "Your experience" },
+    { "id": "improvements", "label": "Improvements" }
+  ],
+  "questions": [
+    {
+      "id": "role",
+      "prompt": "What does your current role involve?",
+      "sectionId": "context",
+      "responseType": "short_text"
+    },
+    {
+      "id": "tools",
+      "prompt": "Do you use decision-support tools?",
+      "sectionId": "context",
+      "responseType": "single_select",
+      "options": ["Yes", "No"]
+    },
+    {
+      "id": "experience",
+      "prompt": "How do those tools help?",
+      "sectionId": "context",
+      "showIf": [
+        { "questionId": "tools", "operator": "equals", "value": "Yes" }
+      ]
+    },
+    {
+      "prompt": "How useful is the support you receive?",
+      "sectionId": "improvements",
+      "responseType": "likert_scale",
+      "min": 1,
+      "max": 5,
+      "minLabel": "Not useful",
+      "maxLabel": "Very useful"
+    },
+    {
+      "prompt": "What would you change?",
+      "sectionId": "improvements",
+      "required": false
+    }
+  ]
+}

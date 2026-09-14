@@ -17,6 +17,8 @@ interface SectionPathProps {
   percent: number;
   /** "full" is the section-transition centrepiece; "compact" sits above a question. */
   variant?: "full" | "compact";
+  /** Journey mode names stages without a numeric section count. */
+  journey?: boolean;
 }
 
 /**
@@ -33,6 +35,7 @@ export function SectionPath({
   currentIndex,
   percent,
   variant = "compact",
+  journey = false,
 }: SectionPathProps) {
   const prefersReducedMotion = useReducedMotion();
   const full = variant === "full";
@@ -46,11 +49,15 @@ export function SectionPath({
       aria-valuenow={percent}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-label={`Progress: section ${currentIndex + 1} of ${count}, ${percent}% complete`}
+      aria-label={
+        journey
+          ? `Progress: ${sections[currentIndex]?.label ?? "journey"}, ${percent}% complete`
+          : `Progress: section ${currentIndex + 1} of ${count}, ${percent}% complete`
+      }
     >
       <div className="flex items-baseline justify-between gap-4">
         <p className="truncate text-sm text-muted-foreground">
-          {full
+          {full && !journey
             ? `Section ${currentIndex + 1} of ${count}`
             : sections[currentIndex]?.label}
         </p>

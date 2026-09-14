@@ -19,7 +19,11 @@ import { AnonymityGraphic } from "@/components/layout/anonymity-graphic";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { consentContent, type ConsentPoint } from "@/features/consent/content";
+import {
+  consentContent,
+  estimatedMinutesFor,
+  type ConsentPoint,
+} from "@/features/consent/content";
 import { useInterview } from "@/features/interview/use-interview";
 import { transitions } from "@/lib/motion";
 
@@ -57,7 +61,7 @@ function AgreedMark() {
  * the same points more completely rather than hiding anything that matters.
  */
 export function ConsentScreen() {
-  const { dispatch, state } = useInterview();
+  const { config, dispatch, state } = useInterview();
   const [agreed, setAgreed] = useState(state.consent?.accepted ?? false);
   // Recorded separately from participation, and never inferred from it.
   const [voiceAgreed, setVoiceAgreed] = useState(
@@ -73,7 +77,12 @@ export function ConsentScreen() {
       <div className="flex w-full max-w-(--width-content-narrow) flex-col gap-6">
         <div className="flex flex-col gap-2">
           <ScreenHeading>{consentContent.title}</ScreenHeading>
-          <p className="text-muted-foreground">{consentContent.intro}</p>
+          <p className="text-muted-foreground">
+            {consentContent.intro.replace(
+              "20–30 minutes",
+              estimatedMinutesFor(config)
+            )}
+          </p>
         </div>
 
         {/* One line each, so the whole picture is visible at a glance. */}

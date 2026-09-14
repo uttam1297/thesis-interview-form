@@ -70,6 +70,7 @@ export default async function PilotPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
               <tr>
+                <th className="px-3 py-2 font-medium">Version</th>
                 <th className="px-3 py-2 font-medium">Question</th>
                 <th className="px-3 py-2 font-medium">Construct</th>
                 <th className="px-3 py-2 font-medium">Answered</th>
@@ -79,7 +80,20 @@ export default async function PilotPage() {
             </thead>
             <tbody>
               {questions.map((question) => (
-                <tr key={question.questionKey} className="border-t">
+                <tr
+                  key={`${question.storageGeneration}:${question.studyStage}:${question.questionKey}`}
+                  className="border-t"
+                >
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <span className="rounded-full border px-2 py-0.5 text-xs font-medium">
+                      {question.storageGeneration.toUpperCase()}
+                    </span>{" "}
+                    <span className="text-xs text-muted-foreground">
+                      {question.studyStage === "not_recorded"
+                        ? question.questionnaireVersion
+                        : question.studyStage}
+                    </span>
+                  </td>
                   <td className="max-w-md px-3 py-2">{question.prompt}</td>
                   <td className="px-3 py-2 text-muted-foreground">
                     {question.construct || "—"}
@@ -96,7 +110,7 @@ export default async function PilotPage() {
               {questions.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-3 py-6 text-center text-muted-foreground"
                   >
                     No responses recorded yet.

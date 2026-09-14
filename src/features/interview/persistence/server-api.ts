@@ -22,6 +22,7 @@ export interface SessionSnapshotDto {
   responseMode: "asynchronous_form" | "live_interview";
   status: "in_progress" | "completed" | "abandoned" | "withdrawn";
   questionnaireVersion: string;
+  studyStage?: "pilot_v2" | "formal_v2" | "not_recorded";
   config: InterviewConfig;
   currentStepId: string;
   returnToReview: boolean;
@@ -61,6 +62,7 @@ async function request<T>(input: string, init: RequestInit): Promise<T> {
 
 export const sessionApi = {
   start(input: {
+    questionnaireVersion?: string;
     consentVersion: string;
     participationConsent: true;
     recordingConsent: boolean | null;

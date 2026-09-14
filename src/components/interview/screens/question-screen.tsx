@@ -23,7 +23,8 @@ interface QuestionScreenProps {
 
 export function QuestionScreen({ step }: QuestionScreenProps) {
   const { question, section } = step;
-  const { state, dispatch, steps } = useInterview();
+  const { config, state, dispatch, steps } = useInterview();
+  const journey = config.experience === "journey";
   const [error, setError] = useState<string | null>(null);
   const labelId = useId();
   const descriptionId = useId();
@@ -33,7 +34,8 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
   const isOpenQuestion =
     question.responseType === "voice_or_text" ||
     question.responseType === "long_text" ||
-    question.responseType === "optional_elaboration";
+    question.responseType === "optional_elaboration" ||
+    question.responseType === "guided_open";
 
   const record = state.responses[question.id];
   const value = record?.value ?? null;
@@ -71,8 +73,19 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
     <div className="grid w-full justify-items-center gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:justify-items-stretch lg:gap-14">
       <div className="flex w-full max-w-(--width-content-narrow) flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <SectionHeader section={section.label} />
-          <ScreenHeading id={labelId}>{question.prompt}</ScreenHeading>
+          {journey && question.transition ? (
+            <p className="text-sm font-medium text-muted-foreground">
+              {question.transition}
+            </p>
+          ) : (
+            <SectionHeader section={section.label} />
+          )}
+          <ScreenHeading
+            id={labelId}
+            className={journey ? "text-[22px] sm:text-[28px]" : undefined}
+          >
+            {question.prompt}
+          </ScreenHeading>
           {question.description && (
             <p id={descriptionId} className="text-sm text-muted-foreground">
               {question.description}
@@ -82,16 +95,24 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
           Guidance only — never implies a long answer is expected. This is
           supporting copy and does not alter the research question itself.
         */}
-          {isOpenQuestion && (
+          {isOpenQuestion && !journey && (
             <p id={guidanceId} className="text-sm text-muted-foreground">
               A sentence or two is plenty. Answer in your own words.
             </p>
           )}
-          {!question.required && (
-            <p className="text-xs text-muted-foreground">
-              Optional — you can skip this.
-            </p>
-          )}
+          {isOpenQuestion &&
+            journey &&
+            !question.description?.toLowerCase().includes("few sentences") && (
+              <p id={guidanceId} className="text-sm text-muted-foreground">
+                A few sentences are enough.
+              </p>
+            )}
+          {!question.required &&
+            !question.description?.toLowerCase().startsWith("optional") && (
+              <p className="text-xs text-muted-foreground">
+                Optional — you can skip this.
+              </p>
+            )}
         </div>
 
         <ResponseRenderer
@@ -100,12 +121,17 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
           onChange={handleChange}
           labelId={labelId}
           speechConsented={state.consent?.recordingConsent === true}
+          responses={state.responses}
           // Description, guidance and any validation error are all announced
           // with the control they belong to.
           describedById={
             [
               question.description ? descriptionId : null,
-              isOpenQuestion ? guidanceId : null,
+              isOpenQuestion &&
+              (!journey ||
+                !question.description?.toLowerCase().includes("few sentences"))
+                ? guidanceId
+                : null,
               error ? errorId : null,
             ]
               .filter(Boolean)
@@ -137,12 +163,15 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
             total={allQuestions.length}
             answered={answeredCount}
             currentIndex={Math.max(currentIndex, 0)}
+            ariaLabel={journey ? "Your interview path" : undefined}
             className="h-56 w-64 text-foreground"
           />
-          <p className="mt-4 max-w-64 text-sm text-muted-foreground">
-            {question.aside ??
-              `${answeredCount} of ${allQuestions.length} answered so far.`}
-          </p>
+          {!journey && (
+            <p className="mt-4 max-w-64 text-sm text-muted-foreground">
+              {question.aside ??
+                `${answeredCount} of ${allQuestions.length} answered so far.`}
+            </p>
+          )}
         </div>
       </aside>
     </div>

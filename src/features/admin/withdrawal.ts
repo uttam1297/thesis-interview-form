@@ -6,6 +6,7 @@ interface WithdrawInput {
   sessionId: string;
   researcherId: string;
   note?: string;
+  storageGeneration?: "v1" | "v2";
 }
 
 export interface WithdrawResult {
@@ -32,8 +33,46 @@ export async function withdrawSession({
   sessionId,
   researcherId,
   note,
+  storageGeneration = "v1",
 }: WithdrawInput): Promise<WithdrawResult> {
   const supabase = createAdminClient();
+
+  if (storageGeneration === "v2") {
+    const { data: session, error: sessionError } = await supabase
+      .from("interview_v2_sessions")
+      .select("id, status, participant_code")
+      .eq("id", sessionId)
+      .maybeSingle();
+    if (sessionError || !session) throw new Error("V2 session not found");
+    if (session.status === "withdrawn") {
+      throw new Error("Session has already been withdrawn");
+    }
+
+    const { count, error: deleteError } = await supabase
+      .from("interview_v2_responses")
+      .delete({ count: "exact" })
+      .eq("session_id", sessionId);
+    if (deleteError) throw new Error("Could not delete V2 responses");
+    const withdrawnAt = new Date().toISOString();
+    const { error: statusError } = await supabase
+      .from("interview_v2_sessions")
+      .update({ status: "withdrawn", last_activity_at: withdrawnAt })
+      .eq("id", sessionId);
+    if (statusError) throw new Error("Could not update V2 session");
+    const { error: consentError } = await supabase
+      .from("interview_v2_consents")
+      .update({
+        withdrawn_at: withdrawnAt,
+        withdrawal_note: note ?? `Withdrawn by researcher ${researcherId}`,
+      })
+      .eq("session_id", sessionId);
+    if (consentError) throw new Error("Could not record V2 withdrawal");
+    return {
+      participantCode: session.participant_code,
+      deletedResponses: count ?? 0,
+      withdrawnAt,
+    };
+  }
 
   const { data: session, error: sessionError } = await supabase
     .from("sessions")

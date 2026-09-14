@@ -27,14 +27,14 @@ test("Flow A: anonymous participant consents, answers, autosaves to the server a
   ).toBeVisible();
   expect(saveRequests).toContain("POST /api/sessions");
 
-  await answerProfile(page, "Daily");
+  await answerProfile(page);
   await answerCoreQuestions(page);
 
-  await expect(page.getByText("Product Manager")).toBeVisible();
+  await expect(page.getByText("Product / Product Owner")).toBeVisible();
   await page.getByRole("button", { name: "Submit" }).click();
 
   await expect(page.getByRole("heading", { name: "Thank you." })).toBeVisible();
-  await expect(page.getByText(/P\d{3}/)).toBeVisible();
+  await expect(page.getByText(/V2P\d{3}/)).toBeVisible();
   expect(saveRequests).toContain("PATCH /api/sessions/current");
   expect(saveRequests).toContain("POST /api/sessions/current/submit");
 

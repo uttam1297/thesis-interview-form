@@ -89,6 +89,7 @@ export function SessionsBrowser({ sessions }: { sessions: SessionListItem[] }) {
           <Button
             variant="outline"
             size="sm"
+            nativeButton={false}
             render={<a href="/api/admin/export?format=csv" />}
           >
             CSV
@@ -96,6 +97,7 @@ export function SessionsBrowser({ sessions }: { sessions: SessionListItem[] }) {
           <Button
             variant="outline"
             size="sm"
+            nativeButton={false}
             render={<a href="/api/admin/export?format=json" />}
           >
             JSON
@@ -103,6 +105,7 @@ export function SessionsBrowser({ sessions }: { sessions: SessionListItem[] }) {
           <Button
             variant="outline"
             size="sm"
+            nativeButton={false}
             render={<a href="/api/admin/export?format=long" />}
           >
             Qualitative CSV
@@ -122,6 +125,7 @@ export function SessionsBrowser({ sessions }: { sessions: SessionListItem[] }) {
               <th className="px-3 py-2 font-medium">Answers</th>
               <th className="px-3 py-2 font-medium">Duration</th>
               <th className="px-3 py-2 font-medium">Version</th>
+              <th className="px-3 py-2 font-medium">Study stage</th>
               <th className="px-3 py-2 font-medium">Last activity</th>
             </tr>
           </thead>
@@ -130,7 +134,7 @@ export function SessionsBrowser({ sessions }: { sessions: SessionListItem[] }) {
               <tr key={session.id} className="border-t">
                 <td className="px-3 py-2">
                   <Link
-                    href={`/admin/sessions/${session.id}`}
+                    href={`/admin/sessions/${session.id}?source=${session.storageGeneration}`}
                     className="font-medium text-primary underline-offset-4 hover:underline"
                   >
                     {session.participantCode}
@@ -157,7 +161,17 @@ export function SessionsBrowser({ sessions }: { sessions: SessionListItem[] }) {
                     : `${session.durationMinutes} min`}
                 </td>
                 <td className="px-3 py-2 text-muted-foreground">
-                  {session.questionnaireVersion}
+                  <span className="rounded-full border px-2 py-0.5 text-xs font-medium text-foreground">
+                    {session.storageGeneration.toUpperCase()}
+                  </span>{" "}
+                  <span className="text-xs">
+                    {session.questionnaireVersion}
+                  </span>
+                </td>
+                <td className="px-3 py-2 text-muted-foreground">
+                  {session.studyStage === "not_recorded"
+                    ? "Not recorded"
+                    : session.studyStage}
                 </td>
                 <td className="px-3 py-2 text-muted-foreground">
                   {new Date(session.lastActivityAt).toLocaleString()}
@@ -167,7 +181,7 @@ export function SessionsBrowser({ sessions }: { sessions: SessionListItem[] }) {
             {filtered.length === 0 && (
               <tr>
                 <td
-                  colSpan={9}
+                  colSpan={10}
                   className="px-3 py-6 text-center text-muted-foreground"
                 >
                   No sessions match these filters.

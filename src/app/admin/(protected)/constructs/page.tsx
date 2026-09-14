@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
 import { listResponsesByConstruct } from "@/features/admin/queries";
-import type { ResponseValue } from "@/types/interview";
+import { formatAnswer } from "@/features/interview/format-answer";
+import type { InterviewQuestion, ResponseValue } from "@/types/interview";
 
 export const metadata: Metadata = { title: "Responses by construct" };
 export const dynamic = "force-dynamic";
@@ -23,7 +24,32 @@ function renderValue(value: ResponseValue | null, skipped: boolean): string {
       return value.order
         .map((item, index) => `${index + 1}. ${item}`)
         .join(" · ");
+    case "guided_text":
+      return [value.nonAnswer ?? value.text, value.optionalElaboration]
+        .filter(Boolean)
+        .join(" · ");
+    case "multi_elaboration":
+      return [value.values.join(", "), value.other, value.optionalElaboration]
+        .filter(Boolean)
+        .join(" · ");
   }
+}
+
+function renderResponse(
+  question: InterviewQuestion | null,
+  questionId: string,
+  value: ResponseValue | null,
+  skipped: boolean,
+  recordedAt: string
+): string {
+  if (!question) return renderValue(value, skipped);
+  return formatAnswer(question, {
+    questionId,
+    value,
+    skipped,
+    method: "typed",
+    updatedAt: recordedAt,
+  });
 }
 
 export default async function ConstructsPage() {
@@ -45,9 +71,12 @@ export default async function ConstructsPage() {
       )}
 
       {groups.map((group) => (
-        <section key={group.construct} className="flex flex-col gap-3">
+        <section
+          key={`${group.storageGeneration}-${group.construct}`}
+          className="flex flex-col gap-3"
+        >
           <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            {group.construct}
+            {group.storageGeneration.toUpperCase()} · {group.construct}
           </h2>
           <ul className="flex flex-col gap-3">
             {group.responses.map((response, index) => (
@@ -60,6 +89,10 @@ export default async function ConstructsPage() {
                     {response.participantCode}
                   </span>
                   <span className="text-xs text-muted-foreground">
+                    {response.studyStage === "not_recorded"
+                      ? "Stage not recorded"
+                      : response.studyStage}{" "}
+                    ·{" "}
                     {response.responseMode === "live_interview"
                       ? "Live"
                       : "Form"}
@@ -69,7 +102,13 @@ export default async function ConstructsPage() {
                   {response.prompt}
                 </p>
                 <p className="mt-2 text-sm whitespace-pre-line">
-                  {renderValue(response.value, response.skipped)}
+                  {renderResponse(
+                    response.question,
+                    response.questionKey,
+                    response.value,
+                    response.skipped,
+                    response.recordedAt
+                  )}
                 </p>
               </li>
             ))}

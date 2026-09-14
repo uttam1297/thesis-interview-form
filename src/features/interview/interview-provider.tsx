@@ -206,8 +206,13 @@ export function InterviewProvider({
   const currentIndex = findStepIndex(steps, state.currentStepId);
   const currentStep = steps[currentIndex === -1 ? 0 : currentIndex];
   const progress = useMemo(
-    () => calculateProgress(steps, state.currentStepId),
-    [steps, state.currentStepId]
+    () =>
+      calculateProgress(
+        steps,
+        state.currentStepId,
+        config.experience ?? "standard"
+      ),
+    [steps, state.currentStepId, config.experience]
   );
 
   const value: InterviewContextValue = {

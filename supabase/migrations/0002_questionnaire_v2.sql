@@ -236,4 +236,3 @@ revoke all on function publish_interview_v2_questionnaire(text, jsonb, text, jso
   from public, anon, authenticated;
 grant execute on function publish_interview_v2_questionnaire(text, jsonb, text, jsonb)
   to service_role;
-

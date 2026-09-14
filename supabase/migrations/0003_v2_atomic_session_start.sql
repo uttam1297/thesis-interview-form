@@ -110,4 +110,3 @@ revoke all on function start_interview_v2_session(
 grant execute on function start_interview_v2_session(
   text, text, response_mode, text, text, text, boolean, uuid
 ) to service_role;
-

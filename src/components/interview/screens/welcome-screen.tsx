@@ -33,7 +33,7 @@ export function WelcomeScreen() {
   const highlights = [
     `${estimatedMinutesFor(config)}, and you can pause any time`,
     "Your responses are anonymized",
-    "Answer by typing or speaking — whichever you prefer",
+    "Answer by typing or speaking, whichever you prefer",
   ];
 
   return (
@@ -75,7 +75,7 @@ export function WelcomeScreen() {
           className="max-w-xl text-lg text-balance text-muted-foreground"
         >
           Help me understand how product decisions are really made with data and
-          AI — from the people who make them.
+          AI, from the people who make them.
         </motion.p>
 
         <motion.ul

@@ -80,7 +80,12 @@ export function QuestionScreen({ step }: QuestionScreenProps) {
           ) : (
             <SectionHeader section={section.label} />
           )}
-          <ScreenHeading id={labelId}>{question.prompt}</ScreenHeading>
+          <ScreenHeading
+            id={labelId}
+            className={journey ? "text-[22px] sm:text-[28px]" : undefined}
+          >
+            {question.prompt}
+          </ScreenHeading>
           {question.description && (
             <p id={descriptionId} className="text-sm text-muted-foreground">
               {question.description}
